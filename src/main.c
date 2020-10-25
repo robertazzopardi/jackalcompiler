@@ -4,6 +4,8 @@
 
 #include "filehandler.h"
 #include "lexer.h"
+#include "parser.h"
+#include "ast.h"
 
 int main(int argc, char **argv)
 {
@@ -11,21 +13,17 @@ int main(int argc, char **argv)
 
 	Sequence seq = lex(filelines);
 
-	// clean up file contents after lexing, the lines from the file are
-	// not needed anymore
+	// clean up file contents after lexing
 	cleanUpFileContents(filelines);
 
-	// parse
-	// code gen
-
-	for (size_t i = 0; i < seq.count; i++)
-		printf("%s ", seq.tokens[i].value);
-	printf("\n");
+	// parser
+	parse(seq);
 
 	while (seq.count--)
 		free(seq.tokens[seq.count].value);
-
 	free(seq.tokens);
+
+	// code gen
 
 	return 0;
 }

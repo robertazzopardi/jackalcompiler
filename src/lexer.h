@@ -17,15 +17,22 @@
 
 typedef enum
 {
-    lparen,
-    rparen,
-    integer,
-    floatpt,
-    var,
-    type,
-    func,
-    op
+    _leftBracket = 1,
+    _rightBracket = 2,
+    _int = 3,
+    _float = 4,
+    _var = 5,
+    _type = 6,
+    _func = 7,
+    _operator = 8
 } Attribute;
+
+typedef enum
+{
+    none,
+    left_to_right,
+    right_to_left
+} Associates;
 
 typedef struct
 {
@@ -41,7 +48,9 @@ typedef struct
 
 Sequence lex(FileContents filecontents);
 void appendChar(Token *token, char line, size_t i);
-void allocate(Sequence *seq);
-void freeTokens();
+void allocate(Sequence *seq, int *sum);
+int isOperator(const char *s);
+int isNumeric(const char *s);
+char findLastOperaror(Token *tokens, size_t count);
 
 #endif
