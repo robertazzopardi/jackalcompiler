@@ -6,10 +6,13 @@
 #include "stack.h"
 
 void parse(Sequence seq);
-Node *shuntingYardPostFix(Sequence seq);
-void addRemainingOperators(StackNode *operator_stack, StackNode *output_stack);
+Node *shuntingYardPostFix(const Sequence seq);
+void addRemainingOperators(StackNode **operator_stack, StackNode **output_stack, size_t *output_size);
 
-int getPrecedence(Node *node);
-Associates getAssociates(Node *node);
+// void evaluateExpression(StackNode **operator_stack, StackNode **output_stack, size_t *output_size);
+void evaluateExpression(Node **operator, Node * e1, Node * e2);
+
+int getPrecedence(Token token);
+Associates getAssociates(Token token);
 
 #endif

@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-// #include <math.h>
 
 #include "lexer.h"
 
@@ -10,6 +9,7 @@ int isNumeric(const char *s)
 {
     if (s == NULL || *s == '\0' || isspace(*s))
         return 0;
+
     char *p;
     strtod(s, &p);
     return *p == '\0';
@@ -23,66 +23,17 @@ int isOperator(const char *s)
     return s[0] == ADD || s[0] == SUB || s[0] == MUL || s[0] == DIV || s[0] == MOD || s[0] == EXP;
 }
 
-char findLastOperaror(Token *tokens, size_t count)
+// char findLastOperaror(Token *tokens, size_t count)
+// {
+//     for (size_t i = count - 1; i > 0; i--)
+//         if (isOperator(tokens[i].value))
+//             return tokens[i].value[0];
+
+//     return 0;
+// }
+
+void allocate(Sequence *seq)
 {
-    for (size_t i = count - 1; i > 0; i--)
-    {
-        if (isOperator(tokens[i].value))
-        {
-            // printf("%s\n", tokens[i].value);
-            return tokens[i].value[0];
-        }
-    }
-    return 0;
-}
-
-void allocate(Sequence *seq, int *sum)
-{
-    // if (isNumeric(seq->tokens[seq->count - 1].value) || isOperator(seq->tokens[seq->count - 1].value))
-    // {
-    //     if (*sum == 0)
-    //     {
-    //         *sum = atoi(seq->tokens[seq->count - 1].value);
-    //     }
-    //     else
-    //     {
-    //         // printf("%c\n", findLastOperaror(seq->tokens, seq->count));
-    //         switch (findLastOperaror(seq->tokens, seq->count))
-    //         {
-    //         case ADD:
-    //             *sum += atoi(seq->tokens[seq->count - 1].value);
-    //             break;
-    //         case SUB:
-    //             *sum -= atoi(seq->tokens[seq->count - 1].value);
-    //             break;
-    //         case MUL:
-    //             *sum *= atoi(seq->tokens[seq->count - 1].value);
-    //             break;
-    //         case DIV:
-    //             *sum /= atoi(seq->tokens[seq->count - 1].value);
-    //             break;
-    //         case MOD:
-    //             *sum %= atoi(seq->tokens[seq->count - 1].value);
-    //             break;
-    //         case EXP:
-    //             *sum = pow(*sum, atoi(seq->tokens[seq->count - 1].value));
-    //             break;
-
-    //         case 0:
-    //             break;
-
-    //         default:
-    //             break;
-    //         }
-    //     }
-    // }
-    // else
-    // {
-    //     // printf("%d\n", *sum);
-    //     // printf("%s\n", seq->tokens[seq->count - 1].value);
-    // }
-    // printf("%d\n", *sum);
-
     seq->count++;
     seq->tokens = realloc(seq->tokens, (seq->count + 1) * sizeof(*seq->tokens));
 
@@ -115,16 +66,12 @@ Sequence lex(FileContents filecontents)
 {
     Sequence seq;
     seq.tokens = calloc(1, sizeof(*seq.tokens));
-
     seq.count = 0;
 
     for (size_t i = 0; i < filecontents.linecount; i++)
     {
         char *line = filecontents.lines[i];
-
-        seq.count++;
-
-        int expressionSum = 0;
+        // seq.count++;
 
         for (size_t j = 0; j < strlen(line); j++)
         {
@@ -136,39 +83,54 @@ Sequence lex(FileContents filecontents)
             case DIV:
             case MOD:
             case EXP:
-                allocate(&seq, &expressionSum);
+                allocate(&seq);
+                // ALLOCATE_MEM(.c, seq);
 
                 seq.tokens[seq.count - 1].attr = _operator;
-
                 append(&seq.tokens[seq.count - 1].value, &line[j]);
-                if (isdigit(line[j + 1]) > 0 && line[j] != SUB)
-                    allocate(&seq, &expressionSum);
+                // append(&seq.tokens[seq.count - 1].d_type.c, &line[j]);
+
+                if ((isdigit(line[j + 1]) > 0 && line[j] != SUB) || isalpha(line[j + 2]))
+                    allocate(&seq);
 
                 break;
             case LPR:
-                allocate(&seq, &expressionSum);
-
+                allocate(&seq);
                 seq.tokens[seq.count - 1].attr = _leftBracket;
-
                 append(&seq.tokens[seq.count - 1].value, &line[j]);
                 break;
             case RPR:
-                allocate(&seq, &expressionSum);
+                allocate(&seq);
                 seq.tokens[seq.count - 1].attr = _rightBracket;
-
                 append(&seq.tokens[seq.count - 1].value, &line[j]);
                 break;
+
+            case CMM:
+                allocate(&seq);
+                seq.tokens[seq.count - 1].attr = _comma;
+                append(&seq.tokens[seq.count - 1].value, &line[j]);
+
+                if (isalpha(line[j + 2]))
+                    allocate(&seq);
+                break;
+
             case DOT:
                 seq.tokens[seq.count - 1].attr = _float;
             case '0' ... '9':
-                if (j > 0)
-                    if (line[j - 1] == SPA || line[j - 1] == LPR)
-                        allocate(&seq, &expressionSum);
+                if (j > 0 && (line[j - 1] == SPA || line[j - 1] == LPR))
+                    allocate(&seq);
 
                 if (!seq.tokens[seq.count - 1].attr || seq.tokens[seq.count - 1].attr == _operator)
                     seq.tokens[seq.count - 1].attr = _int;
             case 'A' ... 'Z':
             case 'a' ... 'z':
+                if (seq.count == 0)
+                    seq.count++;
+
+                if (seq.tokens[seq.count - 1].value)
+                    if (strchr(seq.tokens[seq.count - 1].value, LPR) || strchr(seq.tokens[seq.count - 1].value, RPR))
+                        allocate(&seq);
+
                 append(&seq.tokens[seq.count - 1].value, &line[j]);
                 if (!seq.tokens[seq.count - 1].attr)
                     seq.tokens[seq.count - 1].attr = _func;

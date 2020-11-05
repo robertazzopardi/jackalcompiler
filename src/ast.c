@@ -3,6 +3,18 @@
 
 #include "ast.h"
 
+void printPreOrder(Node *node)
+{
+    if (!node)
+        return;
+
+    printf("%s ", node->data.value);
+
+    printPreOrder(node->leftNode);
+    printf("\n");
+    printPreOrder(node->rightNode);
+}
+
 void printPostOrder(Node *node)
 {
     if (!node)
@@ -39,18 +51,18 @@ Node *newNodeLeaf(Token data)
     return node;
 }
 
-Node *newNodeRight(Token data, Node *rightNode)
+Node *newNodeLeft(Token data, Node *node)
 {
     // Allocate memory for new node
-    Node *node = calloc(1, sizeof(*node));
+    Node *root = calloc(1, sizeof(*root));
 
     // Assign data to this node
-    node->data = data;
+    root->data = data;
 
     // Initialize left and right children as NULL
     // node->leftNode = NULL;
-    node->rightNode = rightNode;
-    return node;
+    root->leftNode = node;
+    return root;
 }
 
 Node *newNodeBoth(Token data, Node *leftNode, Node *rightNode)
@@ -66,4 +78,27 @@ Node *newNodeBoth(Token data, Node *leftNode, Node *rightNode)
     node->rightNode = rightNode;
 
     return node;
+}
+
+void print2d(Node *root, int space)
+{
+    // Base case
+    if (root == NULL)
+        return;
+
+    // Increase distance between levels
+    space += SPACES; // COUNT;
+
+    // Process right child first
+    print2d(root->rightNode, space);
+
+    // Print current node after space
+    // count
+    printf("\n");
+    for (int i = SPACES; i < space; i++)
+        printf(" ");
+    printf("%s\n", root->data.value);
+
+    // Process left child
+    print2d(root->leftNode, space);
 }

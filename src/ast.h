@@ -3,6 +3,8 @@
 
 #include "lexer.h"
 
+#define SPACES 10
+
 typedef struct nodes Node;
 
 struct nodes
@@ -12,11 +14,14 @@ struct nodes
     Node *rightNode;
 };
 
+void printPreOrder(Node *node);
 void printPostOrder(Node *node);
 void freeTree(Node *node);
 
+void print2d(Node *root, int space);
+
 Node *newNodeLeaf(Token data);
-Node *newNodeRight(Token data, Node *rightNode);
+Node *newNodeLeft(Token data, Node *node);
 Node *newNodeBoth(Token data, Node *leftNode, Node *rightNode);
 
 #endif

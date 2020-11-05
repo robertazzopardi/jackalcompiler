@@ -90,5 +90,12 @@ clean:
 run: all
 	./$(BIN)/$(MAIN) $(TESTARGS)
 
-#  valgrind --leak-check=yes --track-origins=yes ./bin/main ./examples/testfile.lambda
 #  valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./bin/main ./examples/testfile.lambda
+
+# cppcheck command for all source files
+check:
+	cppcheck ./$(SRC)
+
+# valgrind command to check memory
+valgrind: clean all
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(BIN)/$(MAIN) $(TESTARGS)

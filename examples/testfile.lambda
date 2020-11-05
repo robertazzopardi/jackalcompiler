@@ -1,8 +1,26 @@
-print(3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3)
-// print(1+1)
+// PASSING
+// print(max(1*29, 4, 7) * max(99, 82))
+// print(3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3)
+// print(sin(4 / 3 * 3.141))
+// print(sin(1+1))
 // print(-1 + 200 + 0 - (-2.0 + 4))
-// print(4 + 5 + 8)
 // print((4 / 5)) // comment
 // print(1+(2+(34+(5+(6+(7+(8+(9^0))))))))
 // print(-1.000 ^ 3 % 3 - -8) // comment
 // print((8 + (9 / (9 * 7) + -8) - 9))
+// print(max(4, 4^2) * max(99, 82))
+// print(max(44, 66))
+// print(max(2, max(3, 5)))
+// print(max(4, 3, 4, 5))
+// print((3 - 9)^2 + (2 - 8)^2)
+// (3 - 9)^2 + (2 - 8)^2
+// print(sin(max(2, 5) / 3 * 3.141))
+
+
+// TESTING
+
+
+
+
+
+// does not evaluate fully

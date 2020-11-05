@@ -5,7 +5,10 @@
 
 #include "ast.h"
 
+#define IS_EMPTY(stack) ({ !stack; })
+
 typedef struct stack StackNode;
+
 typedef struct stack
 {
     Node *data;
@@ -13,9 +16,10 @@ typedef struct stack
 } StackNode;
 
 StackNode *newNode(Node *data);
-int isEmpty(StackNode *root);
+
 void push(StackNode **root, Node *data);
 Node *pop(StackNode **root);
 Node *top(StackNode *root);
+void printStack(StackNode *root);
 
 #endif

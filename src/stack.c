@@ -11,23 +11,18 @@ StackNode *newNode(Node *data)
     return stackNode;
 }
 
-int isEmpty(StackNode *root)
-{
-    return !root;
-}
-
 void push(StackNode **root, Node *data)
 {
     StackNode *stackNode = newNode(data);
     stackNode->next = *root;
     *root = stackNode;
 
-    printf("%s pushed to stack\n", data->data.value);
+    // printf("%s pushed to stack\n", data->data.value);
 }
 
 Node *pop(StackNode **root)
 {
-    if (isEmpty(*root))
+    if (IS_EMPTY(*root))
         return NULL;
 
     StackNode *temp = *root;
@@ -36,12 +31,25 @@ Node *pop(StackNode **root)
 
     free(temp);
 
+    // printf("%s popped from stack\n", popped->data.value);
+
     return popped;
 }
 
 Node *top(StackNode *root)
 {
-    if (isEmpty(root))
+    if (IS_EMPTY(root))
         return NULL;
     return root->data;
+}
+
+void printStack(StackNode *root)
+{
+    StackNode *n = root;
+    while (n)
+    {
+        printf("%s ", n->data->data.value);
+        n = n->next;
+    }
+    printf("\n");
 }
