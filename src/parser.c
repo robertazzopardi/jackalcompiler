@@ -28,6 +28,7 @@ Node *shuntingYardPostFix(const Sequence seq)
 {
     StackNode *operator_stack = NULL;
     StackNode *output_stack = NULL;
+    StackNode *main_stack = NULL;
     size_t output_size = 0;
 
     int bracket_count = 0;
@@ -79,7 +80,6 @@ Node *shuntingYardPostFix(const Sequence seq)
 
                     else if ((operator_stack && e1 && e2) && operator_stack->data->data.attr == _comma && op->data.attr == _func && (e1->data.attr == _comma || e2->data.attr == _comma))
                     {
-
                         while (operator_stack->data->data.attr != _func)
                             pop(&operator_stack);
 
@@ -130,12 +130,6 @@ Node *shuntingYardPostFix(const Sequence seq)
                         push(&output_stack, newNodeBoth(op->data, e1, e2));
                     }
 
-                    // else if (operator_stack->data->data.attr == _operator && operator_stack->next->data->data.attr == _func)
-                    // {
-                    //     Node *opop = pop(&operator_stack);
-
-                    //     push(&output_stack, newNodeBoth(op->data, opop, e2));
-                    // }
                     else if (operator_stack->data->data.attr == _operator && operator_stack->next->data->data.attr == _func)
                     {
                         Node *opop = pop(&operator_stack);
@@ -164,7 +158,6 @@ Node *shuntingYardPostFix(const Sequence seq)
                     else if (operator_stack->data->data.attr == _leftBracket && op->data.attr == _func &&
                              !e1 && e2 && e2->data.attr == _comma)
                     {
-                        // push(&output_stack, newNodeLeft(op->data, e2));
                         op = newNodeBoth(op->data, e2->leftNode, e2->rightNode);
                         push(&output_stack, op);
                     }
@@ -179,11 +172,6 @@ Node *shuntingYardPostFix(const Sequence seq)
                     {
                         push(&output_stack, newNodeLeft(op->data, e2));
                     }
-                    // else if (operator_stack->data->data.attr == _leftBracket && op->data.attr == _func &&
-                    //          e1 && e2)
-                    // {
-                    //     push(&output_stack, newNodeBoth(op->data, e1, e2));
-                    // }
 
                     else if (op->data.attr == _func && e1 && !e2)
                     {
@@ -218,26 +206,18 @@ Node *shuntingYardPostFix(const Sequence seq)
                     else if ((output_stack && output_stack->next) && operator_stack->data->data.attr == _comma &&
                              ((output_stack->data->data.attr == _int || output_stack->next->data->data.attr == _float) ||
                               (output_stack->data->data.attr == _float || output_stack->next->data->data.attr == _float)))
-                    //  ((output_stack->data->data.attr == _int || output_stack->data->data.attr == _float) &&
-                    //   (output_stack->next->data->data.attr == _int || output_stack->next->data->data.attr == _float)))
                     {
                         push(&output_stack, newNodeBoth(op->data, e1, e2));
                     }
 
                     else if (operator_stack->data->data.attr == _leftBracket)
                     {
-
                         if (e1 && e2)
                         {
                             if (e1->data.attr != _comma && e2->data.attr == _comma)
-                            {
                                 push(&output_stack, newNodeBoth(op->data, e2, e1));
-                            }
                             else
-                            {
-
                                 push(&output_stack, newNodeBoth(op->data, e1, e2));
-                            }
                         }
                         else if (e1 && !e2)
                             push(&output_stack, newNodeLeft(op->data, e1));
@@ -260,173 +240,12 @@ Node *shuntingYardPostFix(const Sequence seq)
                         push(&output_stack, op);
                     }
 
-                    else if (op->data.attr == _operator &&
-                             ((e1->data.attr != _int || e2->data.attr != _int) || (e1->data.attr != _float || e2->data.attr != _float)))
-                    {
-                        push(&output_stack, newNodeBoth(op->data, e1, e2));
-                    }
-
                     else
                     {
-                        printf("");
+                        printf("EXCEPTION");
                     }
 
                     output_size--;
-
-                    // if (operator_stack->data->data.attr == _operator &&
-                    //     ((output_stack->data->data.attr == _int || output_stack->data->data.attr == _float) &&
-                    //      (output_stack->next->data->data.attr == _int || output_stack->next->data->data.attr == _float)))
-                    // {
-                    //     Node *op = pop(&operator_stack);
-
-                    //     Node *e2 = pop(&output_stack);
-                    //     Node *e1 = pop(&output_stack);
-
-                    //     evaluateExpression(&op, e1, e2);
-
-                    //     push(&output_stack, op);
-
-                    //     free(e1);
-                    //     free(e2);
-
-                    //     output_size--;
-                    // }
-                    // else
-                    // {
-                    //     Node *cmm = pop(&operator_stack);
-
-                    //     Node *e1 = pop(&output_stack);
-                    //     Node *e2 = pop(&output_stack);
-
-                    //     // if (cmm->data.attr == _operator && (e1->data.attr == _comma || e2->data.attr == _comma))
-                    //     // {
-                    //     //     Node *opop = pop(&operator_stack);
-
-                    //     //     if (e1->data.attr == _comma && e2->data.attr != _comma)
-                    //     //     {
-                    //     //     }
-                    //     //     else if (e1->data.attr != _comma && e2->data.attr == _comma)
-                    //     //     {
-                    //     //     }
-
-                    //     //     // printf("");
-                    //     // }
-                    //     // else
-
-                    //     if (cmm->data.attr == _comma && operator_stack->data->data.attr != _comma)
-                    //     {
-                    //         printf("");
-                    //         while (operator_stack->data->data.attr != _comma && operator_stack->data->data.attr != _leftBracket)
-                    //         {
-                    //             Node *op = pop(&operator_stack);
-                    //             Node *lo = pop(&output_stack);
-
-                    //             evaluateExpression(&op, lo, e2);
-
-                    //             push(&output_stack, newNodeBoth(cmm->data, op, e1));
-
-                    //             // free(e1);
-                    //             // free(e2);
-
-                    //             // output_size++;
-                    //         }
-                    //     }
-                    //     else if (cmm->data.attr == _operator)
-                    //     {
-                    //         Node *opop = pop(&operator_stack);
-
-                    //         if (opop->data.attr != _func)
-                    //             while (opop->data.attr != _func)
-                    //                 opop = pop(&operator_stack);
-
-                    //         if (opop->data.attr == _func && e1->data.attr == _comma && (e2->data.attr == _int || e2->data.attr == _float))
-                    //         {
-                    //             opop->leftNode = e1->leftNode;
-                    //             opop->rightNode = e1->rightNode;
-                    //             push(&output_stack, newNodeBoth(cmm->data, opop, e2));
-                    //         }
-                    //         else if (opop->data.attr == _func && (e1->data.attr == _int || e1->data.attr == _float) && e2->data.attr == _comma)
-                    //         {
-                    //             opop->leftNode = e2->leftNode;
-                    //             opop->rightNode = e2->rightNode;
-                    //             push(&output_stack, newNodeBoth(cmm->data, opop, e1));
-                    //         }
-                    //         else
-                    //         {
-                    //             if (e1->data.attr != _comma)
-                    //             {
-                    //                 cmm->leftNode = e2;
-                    //                 cmm->rightNode = e1;
-
-                    //                 push(&output_stack, newNodeLeft(opop->data, cmm));
-                    //             }
-                    //             else
-                    //             {
-                    //                 opop->leftNode = e1;
-
-                    //                 if (!opop->leftNode)
-                    //                 {
-                    //                     Node *rl = opop->rightNode->leftNode;
-                    //                     Node *rr = opop->rightNode->rightNode;
-
-                    //                     opop->leftNode = rl;
-                    //                     opop->rightNode = rr;
-                    //                 }
-                    //                 else if (!opop->rightNode)
-                    //                 {
-                    //                     Node *ll = opop->leftNode->leftNode;
-                    //                     Node *lr = opop->leftNode->rightNode;
-
-                    //                     opop->leftNode = ll;
-                    //                     opop->rightNode = lr;
-                    //                 }
-
-                    //                 if (!e2->leftNode)
-                    //                 {
-                    //                     Node *rl = e2->rightNode->leftNode;
-                    //                     Node *rr = e2->rightNode->rightNode;
-
-                    //                     e2->leftNode = rl;
-                    //                     e2->rightNode = rr;
-                    //                 }
-                    //                 else if (!e2->rightNode)
-                    //                 {
-                    //                     Node *ll = e2->leftNode->leftNode;
-                    //                     Node *lr = e2->leftNode->rightNode;
-
-                    //                     e2->leftNode = ll;
-                    //                     e2->rightNode = lr;
-                    //                 }
-                    //                 push(&output_stack, newNodeBoth(cmm->data, opop, e2));
-                    //             }
-                    //         }
-                    //     }
-                    //     else if (e1 && e2 && strchr(cmm->data.value, CMM))
-                    //     {
-                    //         push(&output_stack, newNodeBoth(cmm->data, e1, e2));
-                    //     }
-                    //     else if (!e2)
-                    //     {
-                    //         if (e1->leftNode && e1->rightNode)
-                    //             push(&output_stack, newNodeBoth(cmm->data, e1->leftNode, e1->rightNode));
-                    //         else
-                    //             push(&output_stack, newNodeLeft(cmm->data, e1));
-                    //     }
-                    //     else if (cmm->data.attr == _func && (e1->data.attr != _comma || e2->data.attr != _comma))
-                    //     {
-                    //         push(&output_stack, newNodeBoth(cmm->data, e1->leftNode, e1->rightNode));
-                    //         push(&output_stack, e2);
-                    //         output_size++;
-                    //     }
-                    //     else
-                    //     {
-                    //         push(&output_stack, newNodeLeft(cmm->data, e1));
-                    //         push(&output_stack, e2);
-                    //         output_size++;
-                    //     }
-
-                    //     output_size--;
-                    // }
                 }
 
                 // If we popped until '(' because token is ')', toss both parens
@@ -437,20 +256,42 @@ Node *shuntingYardPostFix(const Sequence seq)
             // Everything except ')' --> stack
             if (token.attr != _rightBracket)
                 push(&operator_stack, newNodeLeaf(token));
+
+            // clean up and push to the main stack
+            if (bracket_count == 0)
+            {
+                addRemainingOperators(&operator_stack, &output_stack, &output_size);
+                push(&main_stack, pop(&output_stack));
+            }
         }
         else
         {
         }
     }
 
-    addRemainingOperators(&operator_stack, &output_stack, &output_size);
+    // addRemainingOperators(&operator_stack, &output_stack, &output_size);
+    // push(&main_stack, pop(&output_stack));
 
-    return pop(&output_stack);
+    // make final tree from main stack
+    while (main_stack && main_stack->next)
+    {
+        Node *top = pop(&main_stack);
+        Node *next = pop(&main_stack);
+
+        Node *right = findLastElement(&top);
+
+        right->rightNode = next;
+
+        push(&main_stack, top);
+    }
+
+    free(operator_stack);
+    free(output_stack);
+    return pop(&main_stack);
 }
 
 void addRemainingOperators(StackNode **operator_stack, StackNode **output_stack, size_t *output_size)
 {
-    // while (!isEmpty(*operator_stack))
     while (!IS_EMPTY(*operator_stack))
     {
         if (*output_size > 1)
@@ -463,7 +304,7 @@ void addRemainingOperators(StackNode **operator_stack, StackNode **output_stack,
 
                 Node *e2 = pop(output_stack);
                 Node *e1 = pop(output_stack);
-                // printf("");
+
                 evaluateExpression(&op, e1, e2);
 
                 push(output_stack, op);
@@ -533,6 +374,9 @@ void evaluateExpression(Node **op, Node *e1, Node *e2)
     }
 
     (*op)->data.attr = strchr((*op)->data.value, DOT) ? _float : _int;
+
+    freeTree(e1);
+    freeTree(e2);
 }
 
 int getPrecedence(Token token)

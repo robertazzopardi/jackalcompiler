@@ -20,8 +20,11 @@ void freeTree(Node *node);
 
 void print2d(Node *root, int space);
 
+Node *findLastElement(Node **root);
+
 Node *newNodeLeaf(Token data);
 Node *newNodeLeft(Token data, Node *node);
+// Node *newNodeRight(Token data, Node *node);
 Node *newNodeBoth(Token data, Node *leftNode, Node *rightNode);
 
 #endif

@@ -3,6 +3,17 @@
 
 #include "ast.h"
 
+Node *findLastElement(Node **root)
+{
+    if (root == NULL)
+        return NULL;
+
+    while ((*root)->rightNode != NULL)
+        root = &(*root)->rightNode;
+
+    return *root;
+}
+
 void printPreOrder(Node *node)
 {
     if (!node)
@@ -64,6 +75,20 @@ Node *newNodeLeft(Token data, Node *node)
     root->leftNode = node;
     return root;
 }
+
+// Node *newNodeRight(Token data, Node *node)
+// {
+//     // Allocate memory for new node
+//     Node *root = calloc(1, sizeof(*root));
+
+//     // Assign data to this node
+//     root->data = data;
+
+//     // Initialize left and right children as NULL
+//     // node->leftNode = NULL;
+//     root->rightNode = node;
+//     return root;
+// }
 
 Node *newNodeBoth(Token data, Node *leftNode, Node *rightNode)
 {

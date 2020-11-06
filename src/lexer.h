@@ -74,8 +74,8 @@ typedef struct
 Sequence lex(FileContents filecontents);
 void appendChar(Token *token, char line, size_t i);
 void allocate(Sequence *seq);
-int isOperator(const char *s);
-int isNumeric(const char *s);
-char findLastOperaror(Token *tokens, size_t count);
+// int isOperator(const char *s);
+// int isNumeric(const char *s);
+// char findLastOperaror(Token *tokens, size_t count);
 
 #endif

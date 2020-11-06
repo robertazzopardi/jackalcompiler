@@ -20,6 +20,6 @@ StackNode *newNode(Node *data);
 void push(StackNode **root, Node *data);
 Node *pop(StackNode **root);
 Node *top(StackNode *root);
-void printStack(StackNode *root);
+// void printStack(StackNode *root);
 
 #endif

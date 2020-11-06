@@ -5,23 +5,23 @@
 
 #include "lexer.h"
 
-int isNumeric(const char *s)
-{
-    if (s == NULL || *s == '\0' || isspace(*s))
-        return 0;
+// int isNumeric(const char *s)
+// {
+//     if (s == NULL || *s == '\0' || isspace(*s))
+//         return 0;
 
-    char *p;
-    strtod(s, &p);
-    return *p == '\0';
-}
+//     char *p;
+//     strtod(s, &p);
+//     return *p == '\0';
+// }
 
-int isOperator(const char *s)
-{
-    if (s == NULL || *s == '\0' || isspace(*s) || strlen(s) > 1)
-        return 0;
+// int isOperator(const char *s)
+// {
+//     if (s == NULL || *s == '\0' || isspace(*s) || strlen(s) > 1)
+//         return 0;
 
-    return s[0] == ADD || s[0] == SUB || s[0] == MUL || s[0] == DIV || s[0] == MOD || s[0] == EXP;
-}
+//     return s[0] == ADD || s[0] == SUB || s[0] == MUL || s[0] == DIV || s[0] == MOD || s[0] == EXP;
+// }
 
 // char findLastOperaror(Token *tokens, size_t count)
 // {

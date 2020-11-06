@@ -43,13 +43,13 @@ Node *top(StackNode *root)
     return root->data;
 }
 
-void printStack(StackNode *root)
-{
-    StackNode *n = root;
-    while (n)
-    {
-        printf("%s ", n->data->data.value);
-        n = n->next;
-    }
-    printf("\n");
-}
+// void printStack(StackNode *root)
+// {
+//     StackNode *n = root;
+//     while (n)
+//     {
+//         printf("%s ", n->data->data.value);
+//         n = n->next;
+//     }
+//     printf("\n");
+// }
