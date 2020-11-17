@@ -57,7 +57,9 @@
 .history/
 
 # folders
+lib/*
 bin/*
+test/bin/*
 build/*
 data/*
 examples/*.o

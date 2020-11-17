@@ -8,19 +8,24 @@ void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips)
 {
     seq->tokens = realloc(seq->tokens, (seq->count + 2) * sizeof(*seq->tokens));
 
+    // create temp array to hold the previous line from the sequence
     Token tmp[len - skips];
 
+    // count to the end of the last line
     unsigned l = 0;
     while (l < seq->count - len + skips)
         l++;
 
+    // put the last lines tokens in the temp araray
     unsigned count = 0;
     for (size_t i = l; i < seq->count; i++)
         tmp[count++] = seq->tokens[i];
 
+    // set the next token to left bracket
     strcpy(seq->tokens[l].value, "(");
     seq->tokens[l].attr = _leftBracket;
 
+    // re add tokens from temp array to the main sequence
     unsigned t = 0;
     while (l < seq->count + 1)
     {
@@ -28,6 +33,7 @@ void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips)
         l++;
     }
 
+    // set last token to right bracket
     strcpy(seq->tokens[l].value, ")");
     seq->tokens[l].attr = _rightBracket;
 

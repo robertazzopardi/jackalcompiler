@@ -7,14 +7,13 @@
 CC = 		gcc
 
 # define any compile-time flags
-# CFLAGS	:= -Wall -Wextra -g
-CFLAGS		:= -W -Wall -Wextra -g -pedantic -Wstrict-overflow=5 -Wshadow
-CFLAGS 		+= -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wunused
+CFLAGS	:= -Wall -Wextra -g
+
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS 		=
+LFLAGS 		:= -L/usr/local/lib
 
 # define BIN directory
 BIN			:= bin
@@ -27,6 +26,9 @@ INCLUDE		:= include
 
 # define lib directory
 LIB			:= lib
+
+# define test directory
+TESTS 		:= test
 
 # define test command line arguements
 TESTARGS := -run -asm ./examples/testfile.lambda
@@ -95,9 +97,9 @@ run: all
 #  valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./bin/main ./examples/testfile.lambda
 
 # cppcheck command for all source files
-check: clean all
-	cppcheck --enable=all --suppress=missingIncludeSystem --check-config ./$(SRC)
+check: cppcheck --enable=all --suppress=missingIncludeSystem --check-config ./$(SRC)
 
 # valgrind command to check memory
-valgrind: clean all
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(BIN)/$(MAIN) $(TESTARGS)
+valgrind: valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(BIN)/$(MAIN) $(TESTARGS)
+
+checkvalgrind: check valgrind
