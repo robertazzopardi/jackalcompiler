@@ -16,11 +16,15 @@ int main(int argc, char **argv)
 	// clean up file contents after lexing
 	cleanUpFileContents(filelines);
 
-	// parser
-	parse(seq);
+	// printf("\n");
 
-	while (seq.count--)
-		free(seq.tokens[seq.count].value);
+	// // parser
+	Node *tree = parse(seq);
+
+	freeTree(tree);
+
+	// while (seq.count--)
+	// 	free(seq.tokens[seq.count].value);
 	free(seq.tokens);
 
 	// code gen

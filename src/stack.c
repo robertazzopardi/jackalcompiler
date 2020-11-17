@@ -22,7 +22,7 @@ void push(StackNode **root, Node *data)
 
 Node *pop(StackNode **root)
 {
-    if (IS_EMPTY(*root))
+    if (!*root)
         return NULL;
 
     StackNode *temp = *root;
@@ -38,18 +38,18 @@ Node *pop(StackNode **root)
 
 Node *top(StackNode *root)
 {
-    if (IS_EMPTY(root))
+    if (!root)
         return NULL;
     return root->data;
 }
 
-// void printStack(StackNode *root)
-// {
-//     StackNode *n = root;
-//     while (n)
-//     {
-//         printf("%s ", n->data->data.value);
-//         n = n->next;
-//     }
-//     printf("\n");
-// }
+void printStack(StackNode *root)
+{
+    StackNode *n = root;
+    while (n)
+    {
+        printf("%s ", n->data->data.value);
+        n = n->next;
+    }
+    printf("\n");
+}

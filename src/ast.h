@@ -14,6 +14,8 @@ struct nodes
     Node *rightNode;
 };
 
+void printInOrder(Node *node);
+
 void printPreOrder(Node *node);
 void printPostOrder(Node *node);
 void freeTree(Node *node);
@@ -24,7 +26,7 @@ Node *findLastElement(Node **root);
 
 Node *newNodeLeaf(Token data);
 Node *newNodeLeft(Token data, Node *node);
-// Node *newNodeRight(Token data, Node *node);
+
 Node *newNodeBoth(Token data, Node *leftNode, Node *rightNode);
 
 #endif

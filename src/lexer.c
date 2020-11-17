@@ -1,144 +1,168 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 
 #include "lexer.h"
 
-// int isNumeric(const char *s)
-// {
-//     if (s == NULL || *s == '\0' || isspace(*s))
-//         return 0;
-
-//     char *p;
-//     strtod(s, &p);
-//     return *p == '\0';
-// }
-
-// int isOperator(const char *s)
-// {
-//     if (s == NULL || *s == '\0' || isspace(*s) || strlen(s) > 1)
-//         return 0;
-
-//     return s[0] == ADD || s[0] == SUB || s[0] == MUL || s[0] == DIV || s[0] == MOD || s[0] == EXP;
-// }
-
-// char findLastOperaror(Token *tokens, size_t count)
-// {
-//     for (size_t i = count - 1; i > 0; i--)
-//         if (isOperator(tokens[i].value))
-//             return tokens[i].value[0];
-
-//     return 0;
-// }
-
-void allocate(Sequence *seq)
+void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips)
 {
-    seq->count++;
-    seq->tokens = realloc(seq->tokens, (seq->count + 1) * sizeof(*seq->tokens));
+    seq->tokens = realloc(seq->tokens, (seq->count + 2) * sizeof(*seq->tokens));
 
-    seq->tokens[seq->count - 1].value = NULL;
-    seq->tokens[seq->count].value = NULL;
+    Token tmp[len - skips];
 
-    seq->tokens[seq->count - 1].attr = 0;
-    seq->tokens[seq->count].attr = 0;
+    unsigned l = 0;
+    while (l < seq->count - len + skips)
+        l++;
+
+    unsigned count = 0;
+    for (size_t i = l; i < seq->count; i++)
+        tmp[count++] = seq->tokens[i];
+
+    strcpy(seq->tokens[l].value, "(");
+    seq->tokens[l].attr = _leftBracket;
+
+    unsigned t = 0;
+    while (l < seq->count + 1)
+    {
+        seq->tokens[l + 1] = tmp[t++];
+        l++;
+    }
+
+    strcpy(seq->tokens[l].value, ")");
+    seq->tokens[l].attr = _rightBracket;
+
+    seq->count += 2;
 }
 
-void append(char **dest, char *c)
+void addNumber(Sequence *seq, unsigned *j, const char *line)
 {
-    if (*dest)
-    {
-        *dest = realloc(*dest, strlen(*dest) + 2);
-        strncat(*dest, c, 1);
-    }
-    else
-    {
-        *dest = calloc(1, 2);
+    unsigned curr = *j;
 
-        char t[2];
-        t[0] = c[0];
-        t[1] = '\0';
-        strcpy(*dest, t);
+    while (isdigit(line[curr + 1]) || line[curr + 1] == DOT)
+        curr++;
+
+    sprintf(seq->tokens[seq->count - 1].value, "%.*s", curr - *j + 1, line + *j);
+
+    seq->tokens[seq->count - 1].attr = strchr(seq->tokens[seq->count - 1].value, DOT) ? _float : _int;
+
+    *j = curr;
+}
+
+int isOperator(const char o)
+{
+    return (o == MOD || o == DIV || o == MUL || o == ADD || o == SUB || o == EXP);
+}
+
+void parseLine(Sequence *seq, const char *line, size_t *prev)
+{
+    const size_t len = strlen(line);
+    printf("%s\n", line);
+
+    unsigned skips = 0;
+
+    for (unsigned j = 0; j < len; j++)
+    {
+        const char c = line[j];
+
+        if (isOperator(c))
+        {
+            seq->count++;
+            seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
+
+            if (c == SUB && isdigit(line[j + 1]))
+            {
+                addNumber(seq, &j, line);
+            }
+            else
+            {
+                sprintf(seq->tokens[seq->count - 1].value, "%c", c);
+
+                // set precedence
+                if (c == SUB || c == ADD)
+                {
+                    seq->tokens[seq->count - 1].precedence = 2;
+                    seq->tokens[seq->count - 1].associate = left_to_right;
+                }
+                else if (c == MUL || c == DIV || c == MOD)
+                {
+                    seq->tokens[seq->count - 1].precedence = 3;
+                    seq->tokens[seq->count - 1].associate = left_to_right;
+                }
+                else
+                {
+                    seq->tokens[seq->count - 1].precedence = 4;
+                    seq->tokens[seq->count - 1].associate = right_to_left;
+                }
+
+                seq->tokens[seq->count - 1].attr = _operator;
+            }
+        }
+        else if (isalpha(c))
+        {
+            for (unsigned index = j; index < len; index++)
+            {
+                if (line[index] == LPR)
+                {
+                    seq->count++;
+                    seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
+                    sprintf(seq->tokens[seq->count - 1].value, "%.*s", index - j, line + j);
+
+                    seq->tokens[seq->count - 1].attr = _func;
+
+                    j = index - 1;
+                    break;
+                }
+            }
+        }
+        else if (c == CMM || c == LPR || c == RPR)
+        {
+            seq->count++;
+            seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
+            sprintf(seq->tokens[seq->count - 1].value, "%c", c);
+
+            if (c == CMM)
+                seq->tokens[seq->count - 1].attr = _comma;
+            else
+                seq->tokens[seq->count - 1].attr = c == LPR ? _leftBracket : _rightBracket;
+        }
+        else if (c == DOT || isdigit(c))
+        {
+            seq->count++;
+            seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
+
+            addNumber(seq, &j, line);
+        }
+        else if (c == SPA)
+        {
+            skips++;
+        }
+        else
+        {
+            printf("undefined char found in line %c\n", c);
+        }
     }
+
+    if (seq->tokens[*prev].value[0] != LPR && seq->tokens[seq->count - 1].value[0] != RPR)
+        addMissingBrackets(seq, len, skips);
 }
 
 Sequence lex(FileContents filecontents)
 {
     Sequence seq;
-    seq.tokens = calloc(1, sizeof(*seq.tokens));
+    seq.tokens = malloc(sizeof(*seq.tokens));
     seq.count = 0;
+
+    printf("\n");
+
+    size_t prev = 0;
 
     for (size_t i = 0; i < filecontents.linecount; i++)
     {
-        char *line = filecontents.lines[i];
-        // seq.count++;
+        const char *line = filecontents.lines[i];
 
-        for (size_t j = 0; j < strlen(line); j++)
-        {
-            switch (line[j])
-            {
-            case SUB:
-            case ADD:
-            case MUL:
-            case DIV:
-            case MOD:
-            case EXP:
-                allocate(&seq);
-                // ALLOCATE_MEM(.c, seq);
+        parseLine(&seq, line, &prev);
 
-                seq.tokens[seq.count - 1].attr = _operator;
-                append(&seq.tokens[seq.count - 1].value, &line[j]);
-                // append(&seq.tokens[seq.count - 1].d_type.c, &line[j]);
-
-                if ((isdigit(line[j + 1]) > 0 && line[j] != SUB) || isalpha(line[j + 2]))
-                    allocate(&seq);
-
-                break;
-            case LPR:
-                allocate(&seq);
-                seq.tokens[seq.count - 1].attr = _leftBracket;
-                append(&seq.tokens[seq.count - 1].value, &line[j]);
-                break;
-            case RPR:
-                allocate(&seq);
-                seq.tokens[seq.count - 1].attr = _rightBracket;
-                append(&seq.tokens[seq.count - 1].value, &line[j]);
-                break;
-
-            case CMM:
-                allocate(&seq);
-                seq.tokens[seq.count - 1].attr = _comma;
-                append(&seq.tokens[seq.count - 1].value, &line[j]);
-
-                if (isalpha(line[j + 2]))
-                    allocate(&seq);
-                break;
-
-            case DOT:
-                seq.tokens[seq.count - 1].attr = _float;
-            case '0' ... '9':
-                if (j > 0 && (line[j - 1] == SPA || line[j - 1] == LPR))
-                    allocate(&seq);
-
-                if (!seq.tokens[seq.count - 1].attr || seq.tokens[seq.count - 1].attr == _operator)
-                    seq.tokens[seq.count - 1].attr = _int;
-            case 'A' ... 'Z':
-            case 'a' ... 'z':
-                if (seq.count == 0)
-                    seq.count++;
-
-                if (seq.tokens[seq.count - 1].value)
-                    if (strchr(seq.tokens[seq.count - 1].value, LPR) || strchr(seq.tokens[seq.count - 1].value, RPR))
-                        allocate(&seq);
-
-                append(&seq.tokens[seq.count - 1].value, &line[j]);
-                if (!seq.tokens[seq.count - 1].attr)
-                    seq.tokens[seq.count - 1].attr = _func;
-                break;
-            default:
-                break;
-            }
-        }
+        prev = seq.count;
     }
 
     return seq;

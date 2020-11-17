@@ -4,27 +4,29 @@
 #
 
 # define the C compiler to use
-CC = gcc
+CC = 		gcc
 
 # define any compile-time flags
-CFLAGS	:= -Wall -Wextra -g
+# CFLAGS	:= -Wall -Wextra -g
+CFLAGS		:= -W -Wall -Wextra -g -pedantic -Wstrict-overflow=5 -Wshadow
+CFLAGS 		+= -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wunused
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
-LFLAGS =
+LFLAGS 		=
 
 # define BIN directory
-BIN	:= bin
+BIN			:= bin
 
 # define source directory
-SRC		:= src
+SRC			:= src
 
 # define include directory
-INCLUDE	:= include
+INCLUDE		:= include
 
 # define lib directory
-LIB		:= lib
+LIB			:= lib
 
 # define test command line arguements
 TESTARGS := -run -asm ./examples/testfile.lambda

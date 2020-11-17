@@ -14,6 +14,18 @@ Node *findLastElement(Node **root)
     return *root;
 }
 
+void printInOrder(Node *node)
+{
+    if (!node)
+        return;
+
+    printPreOrder(node->leftNode);
+
+    printf("%s ", node->data.value);
+
+    printPreOrder(node->rightNode);
+}
+
 void printPreOrder(Node *node)
 {
     if (!node)
@@ -22,7 +34,6 @@ void printPreOrder(Node *node)
     printf("%s ", node->data.value);
 
     printPreOrder(node->leftNode);
-    printf("\n");
     printPreOrder(node->rightNode);
 }
 
@@ -52,6 +63,7 @@ Node *newNodeLeaf(Token data)
 {
     // Allocate memory for new node
     Node *node = calloc(1, sizeof(*node));
+    // Node *node = malloc(sizeof(*node));
 
     // Assign data to this node
     node->data = data;
@@ -76,24 +88,11 @@ Node *newNodeLeft(Token data, Node *node)
     return root;
 }
 
-// Node *newNodeRight(Token data, Node *node)
-// {
-//     // Allocate memory for new node
-//     Node *root = calloc(1, sizeof(*root));
-
-//     // Assign data to this node
-//     root->data = data;
-
-//     // Initialize left and right children as NULL
-//     // node->leftNode = NULL;
-//     root->rightNode = node;
-//     return root;
-// }
-
 Node *newNodeBoth(Token data, Node *leftNode, Node *rightNode)
 {
     // Allocate memory for new node
     Node *node = calloc(1, sizeof(*node));
+    // Node *node = malloc(sizeof(*node));
 
     // Assign data to this node
     node->data = data;
@@ -117,8 +116,7 @@ void print2d(Node *root, int space)
     // Process right child first
     print2d(root->rightNode, space);
 
-    // Print current node after space
-    // count
+    // Print current node after space count
     printf("\n");
     for (int i = SPACES; i < space; i++)
         printf(" ");
