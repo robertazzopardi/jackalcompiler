@@ -1,12 +1,25 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "lexer.h"
 
+inline void printSequence(const Sequence seq)
+{
+    for (size_t i = 0; i < seq.count; i++)
+        printf("%s ", seq.tokens[i].value);
+    printf("\n");
+}
+
+inline int isOperator(const char o)
+{
+    return (o == MOD || o == DIV || o == MUL || o == ADD || o == SUB || o == EXP);
+}
+
 void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips)
 {
-    seq->tokens = realloc(seq->tokens, (seq->count + 2) * sizeof(*seq->tokens));
+    seq->tokens = (Token *)realloc(seq->tokens, (seq->count + 2) * sizeof(Token));
 
     // create temp array to hold the previous line from the sequence
     Token tmp[len - skips];
@@ -54,15 +67,10 @@ void addNumber(Sequence *seq, unsigned *j, const char *line)
     *j = curr;
 }
 
-int isOperator(const char o)
-{
-    return (o == MOD || o == DIV || o == MUL || o == ADD || o == SUB || o == EXP);
-}
-
 void parseLine(Sequence *seq, const char *line, size_t *prev)
 {
     const size_t len = strlen(line);
-    printf("%s\n", line);
+    // printf("%s\n", line);
 
     unsigned skips = 0;
 
@@ -73,7 +81,7 @@ void parseLine(Sequence *seq, const char *line, size_t *prev)
         if (isOperator(c))
         {
             seq->count++;
-            seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
+            seq->tokens = (Token *)realloc(seq->tokens, seq->count * sizeof(Token));
 
             if (c == SUB && isdigit(line[j + 1]))
             {
@@ -110,7 +118,7 @@ void parseLine(Sequence *seq, const char *line, size_t *prev)
                 if (line[index] == LPR)
                 {
                     seq->count++;
-                    seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
+                    seq->tokens = (Token *)realloc(seq->tokens, seq->count * sizeof(Token));
                     sprintf(seq->tokens[seq->count - 1].value, "%.*s", index - j, line + j);
 
                     seq->tokens[seq->count - 1].attr = _func;
@@ -123,7 +131,7 @@ void parseLine(Sequence *seq, const char *line, size_t *prev)
         else if (c == CMM || c == LPR || c == RPR)
         {
             seq->count++;
-            seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
+            seq->tokens = (Token *)realloc(seq->tokens, seq->count * sizeof(Token));
             sprintf(seq->tokens[seq->count - 1].value, "%c", c);
 
             if (c == CMM)
@@ -134,7 +142,7 @@ void parseLine(Sequence *seq, const char *line, size_t *prev)
         else if (c == DOT || isdigit(c))
         {
             seq->count++;
-            seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
+            seq->tokens = (Token *)realloc(seq->tokens, seq->count * sizeof(Token));
 
             addNumber(seq, &j, line);
         }
@@ -154,11 +162,9 @@ void parseLine(Sequence *seq, const char *line, size_t *prev)
 
 Sequence lex(FileContents filecontents)
 {
-    Sequence seq;
-    seq.tokens = malloc(sizeof(*seq.tokens));
-    seq.count = 0;
+    Sequence seq = {.count = 0, .tokens = (Token *)malloc(sizeof(Token))};
 
-    printf("\n");
+    // printf("\n");
 
     size_t prev = 0;
 

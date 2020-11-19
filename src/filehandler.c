@@ -6,6 +6,7 @@
 
 FileContents readFile(const char *file)
 {
+    // open the file
     FILE *inputFile = fopen(file, "r");
     if (!inputFile)
     {
@@ -15,9 +16,7 @@ FileContents readFile(const char *file)
 
     char line[LINE_BUFFER];
 
-    FileContents allLines;
-    allLines.linecount = 0;
-    allLines.lines = NULL;
+    FileContents allLines = {.linecount = 0, .lines = NULL};
 
     while (fgets(line, sizeof(line), inputFile) != 0)
     {
@@ -31,7 +30,7 @@ FileContents readFile(const char *file)
 
         if (strlen(line) > 0)
         {
-            allLines.lines = realloc(allLines.lines, (allLines.linecount + 1) * sizeof(char *));
+            allLines.lines = (char **)realloc(allLines.lines, (allLines.linecount + 1) * sizeof(char *));
             allLines.lines[allLines.linecount++] = strdup(line);
         }
     }
@@ -47,6 +46,5 @@ void cleanUpFileContents(FileContents lines)
 {
     while (lines.linecount--)
         free(lines.lines[lines.linecount]);
-
     free(lines.lines);
 }

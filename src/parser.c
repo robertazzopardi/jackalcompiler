@@ -10,9 +10,7 @@
 
 Node *parse(Sequence seq)
 {
-    for (size_t i = 0; i < seq.count; i++)
-        printf("%s ", seq.tokens[i].value);
-    printf("\n");
+    // printSequence(seq);
 
     Node *n = shuntingYardPostFix(seq);
 
@@ -30,6 +28,7 @@ Node *shuntingYardPostFix(const Sequence seq)
     StackNode *operator_stack = NULL;
     StackNode *output_stack = NULL;
     StackNode *main_stack = NULL;
+
     size_t output_size = 0;
 
     int bracket_count = 0;
@@ -276,6 +275,7 @@ Node *shuntingYardPostFix(const Sequence seq)
         }
     }
 
+    // process the remaining nodes on the operator stack
     while (output_stack)
     {
         Node *n = pop(&output_stack);
@@ -292,7 +292,7 @@ Node *shuntingYardPostFix(const Sequence seq)
         }
     }
 
-    // make final tree from main stack
+    // process remaining nodes from the main stack into one root node
     while (main_stack && main_stack->next)
     {
         Node *top = pop(&main_stack);
@@ -364,7 +364,7 @@ void addRemainingOperators(StackNode **operator_stack, StackNode **output_stack,
 
 Node *evaluateExpression(Node *op, Node *e1, Node *e2)
 {
-    Node *result = malloc(sizeof(*result));
+    Node *result = (Node *)malloc(sizeof(Node));
 
     switch (op->data.value[0])
     {

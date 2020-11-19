@@ -1,9 +1,7 @@
 #ifndef _FILE_HANDLER_
 #define _FILE_HANDLER_
 
-#include <ctype.h>
-
-#define LINE_BUFFER 1024
+#define LINE_BUFFER 80
 
 typedef struct
 {

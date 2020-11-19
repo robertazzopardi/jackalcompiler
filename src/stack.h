@@ -1,8 +1,6 @@
 #ifndef _STACK_
 #define _STACK_
 
-#include <limits.h>
-
 #include "ast.h"
 
 typedef struct stack StackNode;
