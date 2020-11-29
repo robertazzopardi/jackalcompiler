@@ -87,6 +87,15 @@ void parseLine(Sequence *seq, const char *line, size_t *prev)
             {
                 addNumber(seq, &j, line);
             }
+            else if (c == SUB && line[j + 1] == LARR)
+            {
+                seq->tokens[seq->count - 1].value[0] = line[j];
+                seq->tokens[seq->count - 1].value[1] = line[j + 1];
+                seq->tokens[seq->count - 1].attr = _returnType;
+                // printf("%s\n", seq->tokens[seq->count - 1].value);
+                // j++;
+                j += 2;
+            }
             else
             {
                 sprintf(seq->tokens[seq->count - 1].value, "%c", c);
@@ -113,18 +122,69 @@ void parseLine(Sequence *seq, const char *line, size_t *prev)
         }
         else if (isalpha(c))
         {
+            seq->count++;
+            seq->tokens = (Token *)realloc(seq->tokens, seq->count * sizeof(Token));
+
+            char *placeHolder;
+
+            unsigned indexOfSpace = (strchr(line + j, SPA) - (line + j));
+            unsigned indexOfLeftBracket = (strchr(line + j, LPR) - (line + j));
+
+            if (indexOfSpace < indexOfLeftBracket)
+                placeHolder = (char *)malloc(indexOfSpace * sizeof(char));
+            else if (indexOfLeftBracket < indexOfSpace)
+                placeHolder = (char *)malloc(indexOfLeftBracket * sizeof(char));
+
+            unsigned wordIndex = 0;
+
+            // give the function name the type function and then check for main later
+
             for (unsigned index = j; index < len; index++)
             {
-                if (line[index] == LPR)
+                placeHolder[wordIndex++] = line[index];
+
+                if (isalpha(line[index + 1]) || line[index + 1] == LPR)
+                    continue;
+
+                if (strcmp(placeHolder, FUNC) == 0)
                 {
-                    seq->count++;
-                    seq->tokens = (Token *)realloc(seq->tokens, seq->count * sizeof(Token));
+                    strcpy(seq->tokens[seq->count - 1].value, placeHolder);
+
+                    seq->tokens[seq->count - 1].attr = _funcDef;
+
+                    j = index;
+                    break;
+                }
+                else if (strcmp(seq->tokens[seq->count - 1].value, FUNC) && isspace(line[index + 1]))
+                {
+                    strcpy(seq->tokens[seq->count - 1].value, placeHolder);
+
+                    seq->tokens[seq->count - 1].attr = _funcName;
+
+                    j = index;
+                    break;
+                }
+                else if (strcmp(placeHolder, VOID) == 0)
+                {
+                    strcpy(seq->tokens[seq->count - 1].value, placeHolder);
+
+                    seq->tokens[seq->count - 1].attr = _type;
+
+                    j = index;
+                    break;
+                }
+                else if (line[index] == LPR)
+                {
                     sprintf(seq->tokens[seq->count - 1].value, "%.*s", index - j, line + j);
 
                     seq->tokens[seq->count - 1].attr = _func;
 
                     j = index - 1;
                     break;
+                }
+                else
+                {
+                    printf("%c\n", line[index]);
                 }
             }
         }
@@ -146,7 +206,7 @@ void parseLine(Sequence *seq, const char *line, size_t *prev)
 
             addNumber(seq, &j, line);
         }
-        else if (c == SPA)
+        else if (isspace(c))
         {
             skips++;
         }
@@ -156,7 +216,8 @@ void parseLine(Sequence *seq, const char *line, size_t *prev)
         }
     }
 
-    if (seq->tokens[*prev].value[0] != LPR && seq->tokens[seq->count - 1].value[0] != RPR)
+    // if (seq->tokens[*prev].value[0] != LPR && seq->tokens[seq->count - 1].value[0] != RPR && seq->tokens[seq->count - 1].attr != _funcDef)
+    if (seq->tokens[*prev].value[0] != LPR && seq->tokens[seq->count - 1].value[0] != RPR && (seq->tokens[seq->count - 1].attr == _int || seq->tokens[seq->count - 1].attr == _float))
         addMissingBrackets(seq, len, skips);
 }
 

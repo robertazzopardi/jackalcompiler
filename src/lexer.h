@@ -12,9 +12,17 @@
 #define SPA ' '
 #define RPR ')'
 #define LPR '('
-#define NLI '\n'
+// #define NLI '\n\t'
+// #define TAB '\t'
 #define DOT '.'
 #define CMM ','
+#define LARR '>'
+
+// static const char FUNC[] = "func";
+// static const char VOID[] = "void";
+#define FUNC "func"
+#define VOID "void"
+#define MAIN "main"
 
 typedef enum
 {
@@ -26,7 +34,10 @@ typedef enum
     _type,
     _func,
     _operator,
-    _comma
+    _comma,
+    _returnType,
+    _funcDef,
+    _funcName
 } Attribute;
 
 typedef enum

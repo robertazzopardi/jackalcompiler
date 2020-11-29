@@ -13,21 +13,16 @@ int main(int argc, char **argv)
 
 	Sequence seq = lex(filelines);
 
+	printSequence(seq);
+
 	// clean up file contents after lexing
 	cleanUpFileContents(filelines);
 
-	// printf("\n");
-
-	// // parser
 	Node *tree = parse(seq);
 
 	freeTree(tree);
 
-	// while (seq.count--)
-	// 	free(seq.tokens[seq.count].value);
 	free(seq.tokens);
-
-	// code gen
 
 	return 0;
 }
