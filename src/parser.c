@@ -46,6 +46,7 @@ Node *shuntingYardPostFix(const Sequence seq)
         {
             push(&operator_stack, newNodeLeaf(token));
         }
+
         else if (token.attr == _comma)
         {
             push(&operator_stack, newNodeLeaf(token));

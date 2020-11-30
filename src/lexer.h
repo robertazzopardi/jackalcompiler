@@ -64,7 +64,7 @@ typedef struct
 Sequence lex(FileContents filecontents);
 void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips);
 void addNumber(Sequence *seq, unsigned *j, const char *line);
-void parseLine(Sequence *seq, const char *line, size_t *prev);
+void parseLine(Sequence *seq, const char *line, const size_t *prev);
 int isOperator(const char o);
 void printSequence(const Sequence seq);
 

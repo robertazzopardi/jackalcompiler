@@ -6,6 +6,8 @@
 
 FileContents readFile(const char *file)
 {
+    printf("\n");
+
     // open the file
     FILE *inputFile = fopen(file, "r");
     if (!inputFile)
@@ -30,6 +32,8 @@ FileContents readFile(const char *file)
 
         if (strlen(line) > 0)
         {
+            printf("%s\n", line);
+
             allLines.lines = (char **)realloc(allLines.lines, (allLines.linecount + 1) * sizeof(char *));
             allLines.lines[allLines.linecount++] = strdup(line);
         }
