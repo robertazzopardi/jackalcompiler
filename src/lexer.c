@@ -15,44 +15,44 @@ inline void printSequence(const Sequence seq)
 
 inline int isOperator(const char o)
 {
-    return (o == MOD || o == DIV || o == MUL || o == ADD || o == SUB || o == EXP);
+    return (o == MOD || o == DIV || o == MUL || o == ADD || o == SUB || o == EXP || o == LARR || o == RARR);
 }
 
-void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips)
-{
-    seq->tokens = (Token *)realloc(seq->tokens, (seq->count + 2) * sizeof(Token));
+// void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips)
+// {
+//     seq->tokens = (Token *)realloc(seq->tokens, (seq->count + 2) * sizeof(Token));
 
-    // create temp array to hold the previous line from the sequence
-    Token tmp[len - skips];
+//     // create temp array to hold the previous line from the sequence
+//     Token tmp[len - skips];
 
-    // count to the end of the last line
-    unsigned l = 0;
-    while (l < seq->count - len + skips)
-        l++;
+//     // count to the end of the last line
+//     unsigned l = 0;
+//     while (l < seq->count - len + skips)
+//         l++;
 
-    // put the last lines tokens in the temp araray
-    unsigned count = 0;
-    for (size_t i = l; i < seq->count; i++)
-        tmp[count++] = seq->tokens[i];
+//     // put the last lines tokens in the temp araray
+//     unsigned count = 0;
+//     for (size_t i = l; i < seq->count; i++)
+//         tmp[count++] = seq->tokens[i];
 
-    // set the next token to left bracket
-    strcpy(seq->tokens[l].value, "(");
-    seq->tokens[l].attr = _leftBracket;
+//     // set the next token to left bracket
+//     strcpy(seq->tokens[l].value, "(");
+//     seq->tokens[l].attr = _leftBracket;
 
-    // re add tokens from temp array to the main sequence
-    unsigned t = 0;
-    while (l < seq->count + 1)
-    {
-        seq->tokens[l + 1] = tmp[t++];
-        l++;
-    }
+//     // re add tokens from temp array to the main sequence
+//     unsigned t = 0;
+//     while (l < seq->count + 1)
+//     {
+//         seq->tokens[l + 1] = tmp[t++];
+//         l++;
+//     }
 
-    // set last token to right bracket
-    strcpy(seq->tokens[l].value, ")");
-    seq->tokens[l].attr = _rightBracket;
+//     // set last token to right bracket
+//     strcpy(seq->tokens[l].value, ")");
+//     seq->tokens[l].attr = _rightBracket;
 
-    seq->count += 2;
-}
+//     seq->count += 2;
+// }
 
 void addNumber(Sequence *seq, unsigned *j, const char *line)
 {
@@ -91,13 +91,12 @@ void parseLine(Sequence *seq, const char *line, const size_t *prev)
             {
                 addNumber(seq, &j, line);
             }
-            else if (c == SUB && line[j + 1] == LARR)
+            else if (c == SUB && line[j + 1] == RARR)
             {
                 seq->tokens[seq->count - 1].value[0] = line[j];
                 seq->tokens[seq->count - 1].value[1] = line[j + 1];
                 seq->tokens[seq->count - 1].attr = _returnType;
-                // printf("%s\n", seq->tokens[seq->count - 1].value);
-                // j++;
+
                 j += 2;
             }
             else
@@ -113,6 +112,11 @@ void parseLine(Sequence *seq, const char *line, const size_t *prev)
                 else if (c == MUL || c == DIV || c == MOD)
                 {
                     seq->tokens[seq->count - 1].precedence = 3;
+                    seq->tokens[seq->count - 1].associate = left_to_right;
+                }
+                else if (c == LARR || c == RARR)
+                {
+                    seq->tokens[seq->count - 1].precedence = 6;
                     seq->tokens[seq->count - 1].associate = left_to_right;
                 }
                 else
@@ -159,6 +163,15 @@ void parseLine(Sequence *seq, const char *line, const size_t *prev)
                     j = index;
                     break;
                 }
+                else if (strcmp(placeHolder, IF) == 0)
+                {
+                    strcpy(seq->tokens[seq->count - 1].value, placeHolder);
+
+                    seq->tokens[seq->count - 1].attr = _if;
+
+                    j = index;
+                    break;
+                }
                 // else if (strcmp(seq->tokens[seq->count - 1].value, FUNC) == 0 && isspace(line[index + 1]))
                 else if (seq->tokens[seq->count - 1].attr == _funcDef && isspace(line[index + 1]))
                 {
@@ -187,7 +200,7 @@ void parseLine(Sequence *seq, const char *line, const size_t *prev)
                     j = index;
                     break;
                 }
-                else if (line[index + 1] == SPA && line[index + 2] == SUB && line[index + 3] == LARR)
+                else if (line[index + 1] == SPA && line[index + 2] == SUB && line[index + 3] == RARR)
                 {
                     strcpy(seq->tokens[seq->count - 1].value, placeHolder);
 
@@ -238,33 +251,32 @@ void parseLine(Sequence *seq, const char *line, const size_t *prev)
             printf("undefined char found in line %c\n", c);
         }
 
-        if (seq->count > 1 && firstNumber == 0 && seq->tokens[seq->count - 1].attr != _func &&
-            (seq->tokens[seq->count - 1].attr == _int || seq->tokens[seq->count - 1].attr == _float ||
-             seq->tokens[seq->count - 1].attr == _leftBracket || seq->tokens[seq->count - 2].attr != _leftBracket))
-        {
+        // Token tmp = seq->tokens[seq->count - 2];
 
-            firstNumber = seq->count - 1;
-            Token tmp1 = seq->tokens[seq->count - 1];
-            seq->tokens[seq->count - 1].value[0] = '(';
-            seq->tokens[seq->count - 1].value[1] = '\0';
-            seq->tokens[seq->count - 1].precedence = 0;
-            seq->tokens[seq->count - 1].attr = _leftBracket;
-            seq->tokens[seq->count - 1].associate = 0;
+        if (strncmp(line, FUNC, strlen(FUNC)) != 0 &&
+            seq->tokens[seq->count - 1].attr != _type && seq->tokens[seq->count - 1].attr != _rightBracket)
 
-            seq->count++;
-            seq->tokens = (Token *)realloc(seq->tokens, seq->count * sizeof(Token));
-            seq->tokens[seq->count - 1] = tmp1;
-        }
+            if (seq->count > 1 && firstNumber == 0 && seq->tokens[seq->count - 1].attr != _func &&
+                (seq->tokens[seq->count - 1].attr == _int || seq->tokens[seq->count - 1].attr == _float ||
+                 seq->tokens[seq->count - 1].attr == _leftBracket))
+            {
+
+                firstNumber = seq->count - 1;
+
+                Token tmp1 = seq->tokens[seq->count - 1];
+                seq->tokens[seq->count - 1].value[0] = LPR;
+                seq->tokens[seq->count - 1].value[1] = ESC;
+                seq->tokens[seq->count - 1].precedence = 0;
+                seq->tokens[seq->count - 1].attr = _leftBracket;
+                seq->tokens[seq->count - 1].associate = 0;
+
+                seq->count++;
+                seq->tokens = (Token *)realloc(seq->tokens, seq->count * sizeof(Token));
+                seq->tokens[seq->count - 1] = tmp1;
+            }
+
         if (firstNumber != 0 && secondNumber == 0)
-        // if (firstNumber != 0)
-        {
             secondNumber = seq->count - 1;
-        }
-
-        // if (len - 1 == j)
-        // {
-        //     printf("");
-        // }
 
         printf("");
     }
@@ -278,8 +290,8 @@ void parseLine(Sequence *seq, const char *line, const size_t *prev)
         seq->count++;
         seq->tokens = (Token *)realloc(seq->tokens, seq->count * sizeof(Token));
 
-        seq->tokens[seq->count - 1].value[0] = ')';
-        seq->tokens[seq->count - 1].value[1] = '\0';
+        seq->tokens[seq->count - 1].value[0] = RPR;
+        seq->tokens[seq->count - 1].value[1] = ESC;
         seq->tokens[seq->count - 1].precedence = 0;
         seq->tokens[seq->count - 1].attr = _rightBracket;
         seq->tokens[seq->count - 1].associate = 0;

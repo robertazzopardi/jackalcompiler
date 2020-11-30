@@ -12,6 +12,7 @@ struct nodes
     Token data;
     Node *leftNode;
     Node *rightNode;
+    Node *condition;
 };
 
 void printInOrder(Node *node);

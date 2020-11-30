@@ -15,7 +15,6 @@ int main(int argc, char **argv)
 
 	printSequence(seq);
 
-	// clean up file contents after lexing
 	cleanUpFileContents(filelines);
 
 	Node *tree = parse(seq);
@@ -23,6 +22,12 @@ int main(int argc, char **argv)
 	freeTree(tree);
 
 	free(seq.tokens);
+
+	// Token t = {.value = "if", .attr};
+
+	// Node *n = newNodeBoth();
+
+	// print2d(n, 0);
 
 	return 0;
 }

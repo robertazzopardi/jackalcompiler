@@ -12,17 +12,21 @@
 #define SPA ' '
 #define RPR ')'
 #define LPR '('
+#define ESC '\0'
+
 // #define NLI '\n\t'
 // #define TAB '\t'
 #define DOT '.'
 #define CMM ','
-#define LARR '>'
+#define RARR '>'
+#define LARR '<'
 
 // static const char FUNC[] = "func";
 // static const char VOID[] = "void";
 #define FUNC "func"
 #define VOID "void"
 #define MAIN "main"
+#define IF "if"
 
 typedef enum
 {
@@ -37,7 +41,8 @@ typedef enum
     _comma,
     _returnType,
     _funcDef,
-    _funcName
+    _funcName,
+    _if
 } Attribute;
 
 typedef enum
@@ -62,7 +67,7 @@ typedef struct
 } Sequence;
 
 Sequence lex(FileContents filecontents);
-void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips);
+// void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips);
 void addNumber(Sequence *seq, unsigned *j, const char *line);
 void parseLine(Sequence *seq, const char *line, const size_t *prev);
 int isOperator(const char o);

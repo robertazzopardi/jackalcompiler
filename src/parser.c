@@ -387,7 +387,9 @@ Node *evaluateExpression(Node *op, Node *e1, Node *e2)
     case EXP:
         snprintf(result->data.value, 10, "%.6g", pow(atof(e1->data.value), atof(e2->data.value)));
         break;
+
     default:
+        printf("\n");
         break;
     }
 

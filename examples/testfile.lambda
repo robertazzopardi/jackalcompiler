@@ -22,5 +22,10 @@
 // print 1 + 2 + 3
 // print max 1 max 2 3
 
+//func main -> void
+// 	print 1 * 8 * 5 * 9
+//	print 32 ^ 49
+
 func main -> void
- 	print 1 * 8 * 5 * 9
+ 	if 5 > 2
+		print 3
