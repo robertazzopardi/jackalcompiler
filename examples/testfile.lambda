@@ -26,6 +26,21 @@
 // 	print 1 * 8 * 5 * 9
 //	print 32 ^ 49
 
-func main -> void
- 	if 5 > 2
-		print 3
+//func main -> void
+// 	if 5 > 2
+//		print 3
+
+
+
+
+
+//func main -> void
+//	print 3 + 4
+
+//func name -> void
+//	print 55
+
+func second -> void
+	print 6743
+
+// func df -> void print 3

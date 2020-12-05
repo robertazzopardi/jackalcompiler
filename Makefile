@@ -97,9 +97,11 @@ run: all
 #  valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./bin/main ./examples/testfile.lambda
 
 # cppcheck command for all source files
-check: cppcheck --enable=all --suppress=missingIncludeSystem --check-config ./$(SRC)
+check:
+	cppcheck --enable=all --suppress=missingIncludeSystem --check-config ./$(SRC)
 
 # valgrind command to check memory
-valgrind: valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(BIN)/$(MAIN) $(TESTARGS)
+valgrind:
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(BIN)/$(MAIN) $(TESTARGS)
 
 checkvalgrind: check valgrind

@@ -5,7 +5,7 @@
 
 StackNode *newNode(Node *data)
 {
-    StackNode *stackNode = (StackNode *)malloc(sizeof(StackNode));
+    StackNode *stackNode = malloc(sizeof(*stackNode));
     stackNode->data = data;
     stackNode->next = NULL;
     return stackNode;

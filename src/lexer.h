@@ -14,15 +14,11 @@
 #define LPR '('
 #define ESC '\0'
 
-// #define NLI '\n\t'
-// #define TAB '\t'
 #define DOT '.'
 #define CMM ','
 #define RARR '>'
 #define LARR '<'
 
-// static const char FUNC[] = "func";
-// static const char VOID[] = "void";
 #define FUNC "func"
 #define VOID "void"
 #define MAIN "main"
@@ -36,10 +32,10 @@ typedef enum
     _float,
     _var,
     _type,
-    _func,
+    _funcCall,
     _operator,
     _comma,
-    _returnType,
+    _funcReturnType,
     _funcDef,
     _funcName,
     _if
@@ -68,8 +64,8 @@ typedef struct
 
 Sequence lex(FileContents filecontents);
 // void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips);
-void addNumber(Sequence *seq, unsigned *j, const char *line);
-void parseLine(Sequence *seq, const char *line, const size_t *prev);
+// void addNumber(Sequence *seq, unsigned *j, const char *line);
+// void parseLine(Sequence *seq, const char *line);
 int isOperator(const char o);
 void printSequence(const Sequence seq);
 

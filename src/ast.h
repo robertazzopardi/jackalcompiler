@@ -13,7 +13,16 @@ struct nodes
     Node *leftNode;
     Node *rightNode;
     Node *condition;
+
+    Node *parent;
 };
+
+// struct nodes
+// {
+//     Token data;
+//     Node *leftNode;
+//     Node *rightNode;
+// };
 
 void printInOrder(Node *node);
 

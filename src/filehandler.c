@@ -34,7 +34,7 @@ FileContents readFile(const char *file)
         {
             printf("%s\n", line);
 
-            allLines.lines = (char **)realloc(allLines.lines, (allLines.linecount + 1) * sizeof(char *));
+            allLines.lines = realloc(allLines.lines, (allLines.linecount + 1) * sizeof(*allLines.lines));
             allLines.lines[allLines.linecount++] = strdup(line);
         }
     }
