@@ -4,6 +4,28 @@
 
 #include "filehandler.h"
 
+void parseFileLines(char line[], FileContents *allLines, FILE *inputFile)
+{
+    while (fgets(line, LINE_BUFFER, inputFile) != 0)
+    {
+        line[strcspn(line, "\r\n")] = '\0';
+
+        char *result = strstr(line, "//");
+        size_t position = result - line;
+
+        if (position < strlen(line))
+            line[position] = '\0';
+
+        if (strlen(line) > 0)
+        {
+            printf("%s\n", line);
+
+            allLines->lines = realloc(allLines->lines, (allLines->linecount + 1) * sizeof(*allLines->lines));
+            allLines->lines[allLines->linecount++] = strdup(line);
+        }
+    }
+}
+
 FileContents readFile(const char *file)
 {
     printf("\n");
@@ -20,24 +42,7 @@ FileContents readFile(const char *file)
 
     FileContents allLines = {.linecount = 0, .lines = NULL};
 
-    while (fgets(line, sizeof(line), inputFile) != 0)
-    {
-        line[strcspn(line, "\r\n")] = '\0';
-
-        char *result = strstr(line, "//");
-        size_t position = result - line;
-
-        if (position < strlen(line))
-            line[position] = '\0';
-
-        if (strlen(line) > 0)
-        {
-            printf("%s\n", line);
-
-            allLines.lines = realloc(allLines.lines, (allLines.linecount + 1) * sizeof(*allLines.lines));
-            allLines.lines[allLines.linecount++] = strdup(line);
-        }
-    }
+    parseFileLines(line, &allLines, inputFile);
 
     fclose(inputFile);
 

@@ -23,9 +23,13 @@
 #define VOID "void"
 #define MAIN "main"
 #define IF "if"
+#define ELIF "elif"
+#define ELSE "else"
+#define CONDITION "condition"
 
 typedef enum
 {
+    _none,
     _leftBracket,
     _rightBracket,
     _int,
@@ -38,7 +42,10 @@ typedef enum
     _funcReturnType,
     _funcDef,
     _funcName,
-    _if
+    _if,
+    _elif,
+    _else,
+    _condition
 } Attribute;
 
 typedef enum
@@ -50,7 +57,15 @@ typedef enum
 
 typedef struct
 {
-    char value[31];
+    char *value;
+    // union
+    // {
+    //     float f;
+    //     double d;
+    //     int i;
+    //     char *s;
+    //     char c;
+    // } value;
     Attribute attr;
     int precedence;
     Associates associate;
@@ -63,10 +78,9 @@ typedef struct
 } Sequence;
 
 Sequence lex(FileContents filecontents);
-// void addMissingBrackets(Sequence *seq, const size_t len, unsigned skips);
-// void addNumber(Sequence *seq, unsigned *j, const char *line);
-// void parseLine(Sequence *seq, const char *line);
+
 int isOperator(const char o);
+
 void printSequence(const Sequence seq);
 
 #endif

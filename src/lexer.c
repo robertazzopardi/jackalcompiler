@@ -25,6 +25,8 @@ void addNumber(Sequence *seq, unsigned *j, const char *line)
     while (isdigit(line[curr + 1]) || line[curr + 1] == DOT)
         curr++;
 
+    seq->tokens[seq->count - 1].value = malloc(curr - *j + 1);
+
     sprintf(seq->tokens[seq->count - 1].value, "%.*s", curr - *j + 1, line + *j);
 
     seq->tokens[seq->count - 1].attr = strchr(seq->tokens[seq->count - 1].value, DOT) ? _float : _int;
@@ -40,6 +42,8 @@ void addOperator(Sequence *seq, const char c, const char *line, unsigned *j)
     }
     else if (c == SUB && line[*j + 1] == RARR)
     {
+        seq->tokens[seq->count - 1].value = malloc(2);
+
         seq->tokens[seq->count - 1].value[0] = line[*j];
         seq->tokens[seq->count - 1].value[1] = line[*j + 1];
         seq->tokens[seq->count - 1].attr = _funcReturnType;
@@ -48,6 +52,7 @@ void addOperator(Sequence *seq, const char c, const char *line, unsigned *j)
     }
     else
     {
+        seq->tokens[seq->count - 1].value = malloc(1);
         sprintf(seq->tokens[seq->count - 1].value, "%c", c);
 
         // set precedence
@@ -63,7 +68,7 @@ void addOperator(Sequence *seq, const char c, const char *line, unsigned *j)
         }
         else if (c == LARR || c == RARR)
         {
-            seq->tokens[seq->count - 1].precedence = 6;
+            seq->tokens[seq->count - 1].precedence = 1;
             seq->tokens[seq->count - 1].associate = left_to_right;
         }
         else
@@ -78,11 +83,19 @@ void addOperator(Sequence *seq, const char c, const char *line, unsigned *j)
 
 static inline void addPlaceHolder(Sequence seq, char *placeHolder, unsigned *j, unsigned index, Attribute attr)
 {
+    seq.tokens[seq.count - 1].value = malloc(strlen(placeHolder));
+
     strcpy(seq.tokens[seq.count - 1].value, placeHolder);
 
     seq.tokens[seq.count - 1].attr = attr;
 
     *j = index;
+}
+
+static inline void allocate(Sequence *seq)
+{
+    seq->count++;
+    seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
 }
 
 void addString(Sequence *seq, const char *line, unsigned *j, const size_t len)
@@ -108,60 +121,55 @@ void addString(Sequence *seq, const char *line, unsigned *j, const size_t len)
         if (isalpha(line[index + 1]) || line[index + 1] == LPR)
             continue;
 
+        placeHolder[strcspn(placeHolder, "(")] = ESC;
+
         if (strcmp(placeHolder, FUNC) == 0)
-        {
             addPlaceHolder(*seq, placeHolder, j, index, _funcDef);
 
-            break;
-        }
         else if (strcmp(placeHolder, IF) == 0)
-        {
             addPlaceHolder(*seq, placeHolder, j, index, _if);
 
-            break;
-        }
+        else if (strcmp(placeHolder, ELIF) == 0)
+            addPlaceHolder(*seq, placeHolder, j, index, _elif);
+
+        else if (strcmp(placeHolder, ELSE) == 0)
+            addPlaceHolder(*seq, placeHolder, j, index, _else);
+
         else if (seq->tokens[seq->count - 1].attr == _funcDef && isspace(line[index + 1]))
-        {
             addPlaceHolder(*seq, placeHolder, j, index, _funcName);
 
-            break;
-        }
         else if (strcmp(placeHolder, VOID) == 0)
-        {
             addPlaceHolder(*seq, placeHolder, j, index, _type);
 
-            break;
-        }
         else if (line[index + 1] == SPA && line[index + 2] != SUB)
-        {
             addPlaceHolder(*seq, placeHolder, j, index, _funcCall);
 
-            break;
-        }
         else if (line[index + 1] == SPA && line[index + 2] == SUB && line[index + 3] == RARR)
-        {
             addPlaceHolder(*seq, placeHolder, j, index, _funcName);
 
-            break;
-        }
         else if (line[index] == LPR)
-        {
-            // sprintf(seq->tokens[seq->count - 1].value, "%.*s", index - *j, line + *j);
-            placeHolder[strlen(placeHolder) - 1] = ESC;
-
             addPlaceHolder(*seq, placeHolder, j, index - 1, _funcCall);
 
-            break;
-        }
-        else
+        else if (strstr(line, FUNC) != NULL && strstr(line, "->") == NULL)
         {
-            printf("Undefined char %c\n", line[index]);
+            addPlaceHolder(*seq, placeHolder, j, index, _funcName);
+            allocate(seq);
+            addPlaceHolder(*seq, "->", j, len, _funcReturnType);
+            allocate(seq);
+            addPlaceHolder(*seq, "void", j, len, _type);
         }
+
+        else
+            printf("Undefined char %c\n", line[index]);
+
+        break;
     }
 }
 
 void addBracket(Sequence *seq, const char c)
 {
+    seq->tokens[seq->count - 1].value = malloc(1);
+
     sprintf(seq->tokens[seq->count - 1].value, "%c", c);
 
     if (c == CMM)
@@ -170,19 +178,26 @@ void addBracket(Sequence *seq, const char c)
         seq->tokens[seq->count - 1].attr = c == LPR ? _leftBracket : _rightBracket;
 }
 
-static inline void allocate(Sequence *seq)
-{
-    seq->count++;
-    seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
-}
-
 void reSetValue(Sequence *seq, const char paren, const Attribute attr)
 {
+    seq->tokens[seq->count - 1].value = malloc(2);
+
     seq->tokens[seq->count - 1].value[0] = paren;
     seq->tokens[seq->count - 1].value[1] = ESC;
-    seq->tokens[seq->count - 1].precedence = 0;
+    seq->tokens[seq->count - 1].precedence = _none;
     seq->tokens[seq->count - 1].attr = attr;
-    seq->tokens[seq->count - 1].associate = 0;
+    seq->tokens[seq->count - 1].associate = none;
+}
+
+void insertBracket(Sequence *seq, char bracket, Attribute attr)
+{
+    Token valueBeforeNumber = seq->tokens[seq->count - 1];
+
+    reSetValue(seq, bracket, attr);
+
+    allocate(seq);
+
+    seq->tokens[seq->count - 1] = valueBeforeNumber;
 }
 
 void parseLine(Sequence *seq, const char *line)
@@ -214,31 +229,49 @@ void parseLine(Sequence *seq, const char *line)
 
         if (strncmp(line, FUNC, strlen(FUNC)) != 0 &&
             seq->tokens[seq->count - 1].attr != _type &&
-            seq->tokens[seq->count - 1].attr != _rightBracket)
+            seq->tokens[seq->count - 1].attr != _rightBracket &&
+            seq->count && firstNumber == 0 &&
+            seq->tokens[seq->count - 1].attr != _funcCall &&
+
+            (seq->tokens[seq->count - 1].attr == _int ||
+             seq->tokens[seq->count - 1].attr == _float ||
+             seq->tokens[seq->count - 1].attr == _leftBracket))
         {
-            if (seq->count > 1 && firstNumber == 0 &&
-                seq->tokens[seq->count - 1].attr != _funcCall &&
-                (seq->tokens[seq->count - 1].attr == _int ||
-                 seq->tokens[seq->count - 1].attr == _float ||
-                 seq->tokens[seq->count - 1].attr == _leftBracket))
-            {
-                firstNumber = seq->count - 1;
+            firstNumber = seq->count - 1;
 
-                Token valueBeforeNumber = seq->tokens[seq->count - 1];
+            insertBracket(seq, LPR, _leftBracket);
+        }
+        else if (seq->count && firstNumber == 0 &&
+                 (seq->tokens[seq->count - 1].attr == _int ||
+                  seq->tokens[seq->count - 1].attr == _float ||
+                  seq->tokens[seq->count - 1].attr == _leftBracket))
+        {
+            firstNumber = j;
 
-                reSetValue(seq, LPR, _leftBracket);
+            insertBracket(seq, LPR, _leftBracket);
+        }
+        else if (seq->count && firstNumber != 0 && seq->tokens[seq->count - 2].attr == _funcCall &&
+                 (seq->tokens[seq->count - 1].attr == _int ||
+                  seq->tokens[seq->count - 1].attr == _float ||
+                  seq->tokens[seq->count - 1].attr == _leftBracket))
+        {
+            firstNumber = j;
 
-                allocate(seq);
-
-                seq->tokens[seq->count - 1] = valueBeforeNumber;
-            }
+            insertBracket(seq, LPR, _leftBracket);
+        }
+        else if (seq->count && firstNumber != 0 && seq->tokens[seq->count - 1].attr == _funcCall &&
+                 (seq->tokens[seq->count - 2].attr == _leftBracket ||
+                  seq->tokens[seq->count - 2].attr == _int ||
+                  seq->tokens[seq->count - 2].attr == _float))
+        {
+            insertBracket(seq, RPR, _rightBracket);
         }
 
         if (firstNumber != 0 && secondNumber == 0)
             secondNumber = seq->count - 1;
     }
 
-    if (firstNumber != 0 && secondNumber != 0)
+    if ((firstNumber != 0 && secondNumber != 0))
     {
         allocate(seq);
 
