@@ -91,8 +91,11 @@ clean:
 	$(RM) $(OUTPUTMAIN)
 	$(RM) $(call FIXPATH,$(OBJECTS))
 
-run: all
+run: clear all
 	./$(BIN)/$(MAIN) $(TESTARGS)
+
+clear:
+	clear
 
 #  valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./bin/main ./examples/testfile.lambda
 
