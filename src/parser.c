@@ -3,10 +3,10 @@
 #include <string.h>
 #include <math.h>
 
-#include "parser.h"
-#include "lexer.h"
-#include "ast.h"
-#include "stack.h"
+#include "../include/parser.h"
+#include "../include/lexer.h"
+#include "../include/ast.h"
+#include "../include/stack.h"
 
 size_t FindIndex(const Token *a, size_t size, Attribute attribute, const size_t i)
 {
@@ -466,7 +466,19 @@ Node *parse(Sequence seq)
             curr->data = token;
             break;
         case _type:
-            curr->rightNode->data = token;
+            // printf("%s\n", token.value);
+            // printf("%s\n", curr->data.value);
+
+            if (strcmp(token.value, VOID) == 0)
+            {
+                curr->type = t_void;
+            }
+            // else
+            // {
+            //     curr->type = t_null;
+            // }
+
+            // curr->rightNode->data = token;
             curr->leftNode = calloc(1, sizeof(*curr->leftNode));
             curr = curr->leftNode;
             break;
@@ -482,7 +494,7 @@ Node *parse(Sequence seq)
             addNodeRight(&curr, &ifRoot, token);
             break;
         case _funcReturnType:
-            curr->rightNode = calloc(1, sizeof(*curr->rightNode));
+            // curr->rightNode = calloc(1, sizeof(*curr->rightNode));
             break;
         case _leftBracket:
         {

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "lexer.h"
+#include "../include/lexer.h"
 
 inline void printSequence(const Sequence seq)
 {
@@ -279,6 +279,8 @@ void parseLine(Sequence *seq, const char *line)
     }
 }
 
+// main handler for lexing
+// loop and process over each line
 Sequence lex(FileContents filecontents)
 {
     Sequence seq = {.count = 0, .tokens = malloc(sizeof(*seq.tokens))};

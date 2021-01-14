@@ -9,6 +9,7 @@ typedef struct nodes Node;
 
 struct nodes
 {
+    Type type;
     Token data;
     Node *leftNode;
     Node *rightNode;

@@ -4,10 +4,18 @@
 #
 
 # define the C compiler to use
-CC = 		gcc
+CC = 		clang
+# CC = 		gcc
+
+CPP = 		clang++
 
 # define any compile-time flags
 CFLAGS	:= -Wall -Wextra -g
+
+CFLAGS 	+= `llvm-config --cflags`
+
+# LDFLAGS := `llvm-config --cxxflags --ldflags --libs core executionengine jit interpreter analysis native bitwriter --system-libs`
+LDFLAGS := `llvm-config --cxxflags --ldflags --libs core analysis native bitwriter --system-libs`
 
 
 # define library paths in addition to /usr/lib
@@ -77,7 +85,8 @@ $(BIN):
 	$(MD) $(BIN)
 
 $(MAIN): $(OBJECTS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
+	$(CPP) $(CFLAGS) $(INCLUDES) $(LDFLAGS) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
+	# $(CC) $(CFLAGS) $(INCLUDES) $(LDFLAGS) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
 
 # this is a suffix replacement rule for building .o's from .c's
 # it uses automatic variables $<: the name of the prerequisite of
@@ -91,11 +100,8 @@ clean:
 	$(RM) $(OUTPUTMAIN)
 	$(RM) $(call FIXPATH,$(OBJECTS))
 
-run: clear all
+run: all
 	./$(BIN)/$(MAIN) $(TESTARGS)
-
-clear:
-	clear
 
 #  valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./bin/main ./examples/testfile.lambda
 

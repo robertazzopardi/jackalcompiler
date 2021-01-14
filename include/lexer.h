@@ -29,11 +29,20 @@
 
 typedef enum
 {
+    t_int,
+    t_float,
+    t_void
+} Type;
+
+typedef enum
+{
     _none,
     _leftBracket,
     _rightBracket,
+
     _int,
     _float,
+
     _var,
     _type,
     _funcCall,
@@ -58,14 +67,6 @@ typedef enum
 typedef struct
 {
     char *value;
-    // union
-    // {
-    //     float f;
-    //     double d;
-    //     int i;
-    //     char *s;
-    //     char c;
-    // } value;
     Attribute attr;
     int precedence;
     Associates associate;

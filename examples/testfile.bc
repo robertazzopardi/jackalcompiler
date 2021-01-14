@@ -1,0 +1,12 @@
+; ModuleID = 'testfile'
+source_filename = "testfile"
+
+define void @main() {
+main_block:
+  ret void
+}
+
+define void @name() {
+name_block:
+  ret void
+}
