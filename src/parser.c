@@ -467,7 +467,7 @@ Node *parse(Sequence seq)
             break;
         case _type:
             // printf("%s\n", token.value);
-            // printf("%s\n", curr->data.value);
+            printf("%s\n", curr->data.value);
 
             if (strcmp(token.value, VOID) == 0)
             {

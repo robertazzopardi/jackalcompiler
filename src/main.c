@@ -30,7 +30,7 @@
  */
 int main(int argc, char **argv)
 {
-	parseArgs(argv);
+	parseArgs(argc, argv);
 
 	// start complination
 	FileContents filelines = readFile();
@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 
 	Node *ast = parse(seq);
 
-	// print2d(ast, 0);
+	print2d(ast, 0);
 	generateCode(ast);
 
 	freeTree(ast);

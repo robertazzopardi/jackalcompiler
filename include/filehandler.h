@@ -72,9 +72,10 @@ FileContents readFile();
 /**
  * @brief parse the command line args
  *
+ * @param argc
  * @param argv
  */
-void parseArgs(char **argv);
+void parseArgs(int argc, char **argv);
 
 /**
  * @brief write the bit code from llvm to a file

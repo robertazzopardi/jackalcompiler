@@ -19,12 +19,19 @@ int string_ln(char *p) /* p=&str[0] */
     return count;
 }
 
-void parseArgs(char **argv)
+void parseArgs(int argc, char **argv)
 {
     int i = 0;
 
-    while (strstr(argv[i], EXT_SRC) == NULL)
-        i++;
+    // while (strstr(argv[i], EXT_SRC) == NULL)
+    //     i++;
+    for (i = 0; i < argc; i++)
+    {
+        if (strstr(argv[i], EXT_SRC) != NULL)
+        {
+            break;
+        }
+    }
 
     if (i == 0)
     {
@@ -69,14 +76,19 @@ void writeLLVMIR(const LLVMModuleRef mod)
         // printf("Error: unable to delete the file");
     }
 
-    char *errorMessage = "error message";
-    if (LLVMPrintModuleToFile(mod, destPath, &errorMessage) != 0)
+    char *errors = 0;
+    if (LLVMPrintModuleToFile(mod, destPath, &errors) != 0)
     {
         fprintf(stderr, "error writing to file, skipping\n");
     }
+    LLVMDisposeMessage(errors);
 
     // llc -filetype=obj testfile.bc
     // clang testfile.o
+
+    // llc - filetype = obj testfile.bc
+    //                      clang `llvm -
+    //                  config-- cxxflags-- ldflags-- libs` testfile.o
 }
 
 void parseFileLines(char line[], FileContents *allLines, FILE *inputFile)

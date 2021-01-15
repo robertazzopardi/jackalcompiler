@@ -86,7 +86,11 @@ $(BIN):
 
 $(MAIN): $(OBJECTS)
 	$(CPP) $(CFLAGS) $(INCLUDES) $(LDFLAGS) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
-	# $(CC) $(CFLAGS) $(INCLUDES) $(LDFLAGS) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
+# $(CC) $(CFLAGS) $(INCLUDES) $(LDFLAGS) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
+# $(CPP) --analyze $(CFLAGS) $(INCLUDES) $(LDFLAGS) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
+
+analyse:
+	scan-build make
 
 # this is a suffix replacement rule for building .o's from .c's
 # it uses automatic variables $<: the name of the prerequisite of

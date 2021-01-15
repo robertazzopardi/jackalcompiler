@@ -18,6 +18,8 @@
 
 #include <llvm-c/Core.h>
 #include <llvm-c/Analysis.h>
+#include <llvm-c/DataTypes.h>
+#include <llvm-c/Types.h>
 
 #include "ast.h"
 #include "filehandler.h"
