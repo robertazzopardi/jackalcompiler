@@ -3,10 +3,10 @@
 #include <string.h>
 #include <math.h>
 
-#include "../include/parser.h"
-#include "../include/lexer.h"
-#include "../include/ast.h"
-#include "../include/stack.h"
+#include "parser.h"
+#include "lexer.h"
+#include "ast.h"
+#include "stack.h"
 
 size_t FindIndex(const Token *a, size_t size, Attribute attribute, const size_t i)
 {
@@ -467,7 +467,7 @@ Node *parse(Sequence seq)
             break;
         case _type:
             // printf("%s\n", token.value);
-            printf("%s\n", curr->data.value);
+            // printf("%s\n", curr->data.value);
 
             if (strcmp(token.value, VOID) == 0)
             {
@@ -514,6 +514,8 @@ Node *parse(Sequence seq)
             break;
         }
     }
+
+    // print2d(root, 0);
 
     return root;
 }

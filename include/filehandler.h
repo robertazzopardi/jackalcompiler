@@ -1,9 +1,9 @@
 /**
  * @file filehandler.h
- * @author Robert Azzopardi-Yashi (you@domain.com)
+ * @author robertazzopardi (robertazzopardi@icloud.com)
  * @brief Interface to handle file system interactions
  * @version 0.1
- * @date 2021-01-13
+ * @date 2021-01-16
  *
  * @copyright Copyright (c) 2021
  *
@@ -35,7 +35,18 @@
 #define DOT '.'
 
 /**
- * @brief struct to hold the files lines and the count
+ * @brief Holds the program flags
+ *
+ */
+typedef struct
+{
+    char *filepath;
+    char *filename;
+    char *folderpath;
+} ProgramArgs;
+
+/**
+ * @brief Struct to hold the files lines and the count
  *
  */
 typedef struct
@@ -45,44 +56,28 @@ typedef struct
 } FileContents;
 
 /**
- * @brief global file path
+ * @brief Read the files contents
  *
- */
-extern char *filepath;
-
-/**
- * @brief global folder path
- *
- */
-extern char *folderpath;
-
-/**
- * @brief global file name
- *
- */
-extern char *filename;
-
-/**
- * @brief read the files contents
- *
+ * @param filepath
  * @return FileContents
  */
-FileContents readFile();
+FileContents readFile(const char *filepath);
 
 /**
- * @brief parse the command line args
+ * @brief Parse the command line args
  *
  * @param argc
  * @param argv
  */
-void parseArgs(int argc, char **argv);
+ProgramArgs parseArgs(int argc, char **argv);
 
 /**
- * @brief write the bit code from llvm to a file
+ * @brief Write the bit code from llvm to a file
  *
  * @param mod
+ * @param paths
  */
-void writeLLVMIR(const LLVMModuleRef mod);
+void writeLLVMIR(const LLVMModuleRef mod, ProgramArgs paths);
 
 /**
  * @brief clean up the lines read from the file
@@ -92,9 +87,10 @@ void writeLLVMIR(const LLVMModuleRef mod);
 void cleanUpFileContents(FileContents lines);
 
 /**
- * @brief free the global string for the path variables
+ * @brief Used to free up some program args
  *
+ * @param paths
  */
-void freePathVars();
+void freePathVars(ProgramArgs paths);
 
 #endif

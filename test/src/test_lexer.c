@@ -1,5 +1,5 @@
 #include "unity/unity.h"
-#include "../../src/lexer.h"
+#include "lexer.h"
 
 void setUp(void)
 {

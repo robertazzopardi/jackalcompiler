@@ -10,13 +10,12 @@ CC = 		clang
 CPP = 		clang++
 
 # define any compile-time flags
-CFLAGS	:= -Wall -Wextra -g
+CFLAGS		:= -Wall -Wextra -g
 
-CFLAGS 	+= `llvm-config --cflags`
+CFLAGS 		+= `llvm-config --cflags`
 
 # LDFLAGS := `llvm-config --cxxflags --ldflags --libs core executionengine jit interpreter analysis native bitwriter --system-libs`
-LDFLAGS := `llvm-config --cxxflags --ldflags --libs core analysis native bitwriter --system-libs`
-
+LDFLAGS 	:= `llvm-config --cxxflags --ldflags --libs core analysis passes --system-libs`
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
@@ -111,12 +110,11 @@ run: all
 
 # cppcheck command for all source files
 check: clean all
-	cppcheck -f --enable=all --inconclusive --check-library --debug-warnings --suppress=missingIncludeSystem --check-config ./$(SRC)
+	cppcheck -f --enable=all --inconclusive --check-library --debug-warnings --suppress=missingIncludeSystem --check-config $(INCLUDES) ./$(SRC)
 # cppcheck --enable=all --suppress=missingIncludeSystem --check-config ./$(SRC)
-
 
 # valgrind command to check memory
 valgrind:
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(BIN)/$(MAIN) $(TESTARGS)
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes $(INCLUDES) ./$(BIN)/$(MAIN) $(TESTARGS)
 
 checkvalgrind: check valgrind

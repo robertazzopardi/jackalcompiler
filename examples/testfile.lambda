@@ -31,8 +31,8 @@
 //		print 3
 
 
-func main
-	print 3
+func main -> void
+	print -3.6 + 1
 
 //func main -> void
 //	print max 3 4
@@ -40,13 +40,13 @@ func main
 //func name -> void
 //	print(55)
 
-//func second -> void
-//	if 5 > 3
-//		print 5
-//	elif 4 < 5
-//		print 4
-//	else
-//		print 3 ^ 9
+func second -> void
+	if 5 > 3
+		print 5
+	elif 4 < 5
+		print 4
+	else
+		print 3 ^ 9
 
 //func test -> void
 //	if 4 > 3

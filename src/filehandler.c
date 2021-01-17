@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/filehandler.h"
+#include "filehandler.h"
 
-char *filepath;
-char *folderpath;
-char *filename;
+// char *filepath;
+// char *folderpath;
+// char *filename;
 
 int string_ln(char *p) /* p=&str[0] */
 {
@@ -19,7 +19,7 @@ int string_ln(char *p) /* p=&str[0] */
     return count;
 }
 
-void parseArgs(int argc, char **argv)
+ProgramArgs parseArgs(int argc, char **argv)
 {
     int i = 0;
 
@@ -39,32 +39,36 @@ void parseArgs(int argc, char **argv)
         exit(0);
     }
 
-    filepath = argv[i];
+    ProgramArgs paths;
+
+    paths.filepath = argv[i];
 
     // get folder path
-    char *e1 = strrchr(filepath, SEP);
-    int index = (int)(e1 - filepath) + 1;
+    char *e1 = strrchr(paths.filepath, SEP);
+    int index = (int)(e1 - paths.filepath) + 1;
 
-    folderpath = malloc(index * sizeof(*folderpath));
-    strncpy(folderpath, filepath, index);
-    folderpath[index] = '\0';
+    paths.folderpath = malloc(index * sizeof(*paths.folderpath));
+    strncpy(paths.folderpath, paths.filepath, index);
+    paths.folderpath[index] = '\0';
 
     // get file name
-    char *e2 = strrchr(filepath, DOT);
-    int index2 = (int)(e2 - filepath);
+    char *e2 = strrchr(paths.filepath, DOT);
+    int index2 = (int)(e2 - paths.filepath);
 
-    filename = malloc(index2 - 1 * sizeof(*filename));
-    strncpy(filename, filepath + index, index2 - index);
-    filename[index2] = '\0';
+    paths.filename = malloc(index2 - 1 * sizeof(*paths.filename));
+    strncpy(paths.filename, paths.filepath + index, index2 - index);
+    paths.filename[index2] = '\0';
 
-    printf("\n%s %s %s\n", filepath, folderpath, filename);
+    // printf("\n%s %s %s\n", paths.filepath, paths.folderpath, paths.filename);
+
+    return paths;
 }
 
-void writeLLVMIR(const LLVMModuleRef mod)
+void writeLLVMIR(const LLVMModuleRef mod, ProgramArgs paths)
 {
-    char destPath[string_ln(filename) + string_ln(folderpath) + string_ln(EXT_BC)];
-    strcpy(destPath, folderpath);
-    strcat(destPath, filename);
+    char destPath[string_ln(paths.filename) + string_ln(paths.folderpath) + string_ln(EXT_BC)];
+    strcpy(destPath, paths.folderpath);
+    strcat(destPath, paths.filename);
     strcat(destPath, EXT_BC);
 
     if (remove(destPath) == 0)
@@ -113,7 +117,7 @@ void parseFileLines(char line[], FileContents *allLines, FILE *inputFile)
     }
 }
 
-FileContents readFile()
+FileContents readFile(const char *filepath)
 {
     printf("\n");
 
@@ -136,12 +140,12 @@ FileContents readFile()
     return allLines;
 }
 
-void freePathVars()
-{
-    free(filename);
-    free(folderpath);
-    // free(filepath);
-}
+// void freePathVars(ProgramArgs paths)
+// {
+//     // free(paths.filename);
+//     // free(paths.folderpath);
+//     // free(filepath);
+// }
 
 void cleanUpFileContents(FileContents lines)
 {

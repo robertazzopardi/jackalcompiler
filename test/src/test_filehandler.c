@@ -1,5 +1,5 @@
 #include "unity/unity.h"
-#include "../../src/filehandler.h"
+#include "filehandler.h"
 
 void setUp(void)
 {

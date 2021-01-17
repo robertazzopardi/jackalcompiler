@@ -1,15 +1,15 @@
 /**
  * @file codegen.c
- * @author Robert Azzopardi (you@domain.com)
+ * @author robertazzopardi (robertazzopardi@icloud.com)
  * @brief Implementation to generate llvm code
  * @version 0.1
- * @date 2021-01-13
+ * @date 2021-01-17
  *
  * @copyright Copyright (c) 2021
  *
  */
 
-#include "../include/codegen.h"
+#include "codegen.h"
 
 /**
  * @brief Create a Module object
@@ -32,41 +32,6 @@ char *getBlockName(const char *funcName)
 }
 
 /**
- * @brief Create a Function object
- *
- * @param module
- * @param funcName
- */
-void createFunction(const LLVMModuleRef module, const char *funcName, LLVMTypeRef *paramTypes, const unsigned paramLen)
-{
-
-    // LLVMTypeRef param_types[] = {LLVMInt32Type(), LLVMInt32Type()};
-
-    // LLVMTypeRef ret_type = LLVMFunctionType(LLVMInt32Type(), paramTypes, paramLen, 0);
-    LLVMTypeRef ret_type = LLVMFunctionType(LLVMVoidType(), paramTypes, paramLen, 0);
-
-    LLVMValueRef sum = LLVMAddFunction(module, funcName, ret_type);
-
-    // create the function block
-    // char *blockName;
-    // blockName = malloc(strlen(funcName) * sizeof(*blockName));
-    // strcpy(blockName, funcName);
-    // strcat(blockName, "_block");
-    char *blockName = getBlockName(funcName);
-
-    LLVMBasicBlockRef entry = LLVMAppendBasicBlock(sum, blockName);
-
-    // Instruction builders
-    LLVMBuilderRef builder = LLVMCreateBuilder();
-    LLVMPositionBuilderAtEnd(builder, entry);
-
-    // LLVM IR instruction
-    // LLVMValueRef tmp = LLVMBuildAdd(builder, LLVMGetParam(sum, 0), LLVMGetParam(sum, 1), "tmp");
-    // LLVMBuildRet(builder, tmp);
-    LLVMBuildRetVoid(builder);
-}
-
-/**
  * @brief validates a module through LLVM
  *
  * @param module
@@ -78,18 +43,98 @@ void verifyModule(const LLVMModuleRef module)
     LLVMDisposeMessage(error);
 }
 
-/**
- * @brief Add function to module
- *
- * @param builder
- * @param blockReference
- */
-void commitFunction(const LLVMBuilderRef builder, const LLVMBasicBlockRef blockReference)
+static inline LLVMValueRef getArgValue(Token token)
 {
-    LLVMPositionBuilderAtEnd(builder, blockReference);
+    LLVMValueRef value = NULL;
+    switch (token.attr)
+    {
+    case _int:
+        value = LLVMConstInt(LLVMInt32Type(), strtol(token.value, (char **)NULL, 10), LLVMRealPredicateFalse);
+        break;
 
-    // LLVMBuildRetVoid(builder);
-    LLVMBuildRet(builder, LLVMConstInt(LLVMInt32Type(), 0, LLVMRealPredicateFalse));
+    case _float:
+        value = LLVMConstRealOfString(LLVMFloatType(), token.value);
+        break;
+
+    default:
+        break;
+    }
+    return value;
+}
+
+static inline char *getFormatValue(Attribute attr)
+{
+    char *value = NULL;
+    switch (attr)
+    {
+    case _int:
+        value = "%d\n";
+        break;
+
+    case _float:
+        value = "%.6g\n";
+        break;
+
+    default:
+        break;
+    }
+    return value;
+}
+
+static inline char *getTypeName(Attribute attr)
+{
+    char *value = NULL;
+    switch (attr)
+    {
+    case _int:
+        value = "int_fmt";
+        break;
+
+    case _float:
+        value = "float_fmt";
+        break;
+
+    default:
+        break;
+    }
+    return value;
+}
+
+// static inline int isFunctionDefined(const LLVMModuleRef module, const char *funcName)
+// {
+//     return LLVMGetNamedFunction(module, funcName) != NULL;
+// }
+
+// static inline int isGlobalDefined(const LLVMModuleRef module, const char *name)
+// {
+//     return LLVMGetNamedGlobal(module, name) != NULL;
+// }
+
+void callPrintf(const LLVMModuleRef module, const LLVMBuilderRef builder, Token token)
+{
+    char *fmtName = getTypeName(token.attr);
+
+    // Define printf function
+    LLVMTypeRef args[] = {LLVMPointerType(LLVMInt8Type(), 0)};
+    LLVMTypeRef printfType = LLVMFunctionType(LLVMInt32Type(), args, 1, LLVMRealPredicateTrue);
+
+    // Check if declared
+    // if (isFunctionDefined(module, "printf") == 0)
+    LLVMAddFunction(module, "printf", printfType);
+
+    // Set format
+    LLVMValueRef fmtStr = LLVMBuildGlobalStringPtr(builder, getFormatValue(token.attr), fmtName);
+
+    // char *fmt = getFormatValue(token.attr);
+
+    // Set arguments to pass to orintf
+    LLVMValueRef printArgs[] = {
+        fmtStr,
+        getArgValue(token),
+    };
+
+    // Add the call to the builder
+    LLVMBuildCall2(builder, printfType, LLVMGetNamedFunction(module, "printf"), printArgs, 2, fmtName);
 }
 
 /**
@@ -97,10 +142,10 @@ void commitFunction(const LLVMBuilderRef builder, const LLVMBasicBlockRef blockR
  *
  * @param node
  */
-void parseAst(Node *node, const LLVMModuleRef module)
+void astToLLVMIR(Node *node, const LLVMModuleRef module)
 {
-    LLVMTypeRef *parameters = NULL;
-    unsigned parameterLength = 0;
+    // LLVMTypeRef *parameters = NULL;
+    // unsigned parameterLength = 0;
     LLVMTypeRef returnType;
     LLVMValueRef valueRef;
     LLVMBasicBlockRef blockReference;
@@ -117,26 +162,20 @@ void parseAst(Node *node, const LLVMModuleRef module)
         Node *curr = top(st);
         pop(&st);
         //traverse current node first
-        // printf("%s\n", curr->data.value);
 
         switch (curr->data.attr)
         {
         case _funcDef:
-            // printf("%");
-            // printf("%s\n", curr->data.value);
-
             // if next in tree
             // if there is a function made add to module
             if (builder != NULL)
             {
-                // commitFunction(builder, blockReference);
+                LLVMBuildRetVoid(builder);
             }
             break;
 
         case _funcName:
         {
-            // printf("%s\n", curr->data.value);
-
             char *funcName = curr->data.value;
 
             if (curr->type == t_void)
@@ -150,46 +189,17 @@ void parseAst(Node *node, const LLVMModuleRef module)
 
                 blockReference = LLVMAppendBasicBlock(valueRef, blockName);
                 LLVMPositionBuilderAtEnd(builder, blockReference);
-
-                //
-                // define printf
-
-                // LLVMTypeRef args[] = {LLVMInt8TypeInContext(LLVMGetModuleContext(module))};
-                LLVMTypeRef args[] = {LLVMPointerType(LLVMInt8Type(), 0)};
-
-                LLVMTypeRef printfType = LLVMFunctionType(LLVMInt32Type(), args, 1, LLVMRealPredicateTrue);
-
-                LLVMAddFunction(module, "printf", printfType);
-
-                /*Set up printf arguments*/
-                LLVMValueRef fmtStr = LLVMBuildGlobalStringPtr(builder, "%d %d\n", "fmt");
-                LLVMValueRef printArgs[] = {fmtStr, LLVMConstInt(LLVMInt32Type(), 20, LLVMRealPredicateFalse), LLVMConstInt(LLVMInt32Type(), 30, LLVMRealPredicateFalse)};
-
-                /*We will be printing "20"*/
-                LLVMBuildCall2(builder, printfType, LLVMGetNamedFunction(module, "printf"), printArgs, 3, "fmt");
-
-                //
-                //
-                //
-                //
-
-                LLVMBuildRetVoid(builder);
             }
-
-            // {LLVMVoidType()};
-            // create llvm ir function
-            // createFunction(module, curr->data.value, NULL, 0);
 
             break;
         }
 
         case _funcCall:
         {
-            // char *funcCallName = curr->data.value;
-
-            // LLVMValueRef tmp = LLVMBuildAdd(builder, LLVMGetParam(valueRef, 0), LLVMGetParam(valueRef, 1), "tmp");
-
-            // LLVMBuildCall2(builder, LLVMVoidType(), valueRef, NULL, 0, "tmp");
+            if (strcmp(curr->data.value, PRINT) == 0)
+            {
+                callPrintf(module, builder, curr->leftNode->data);
+            }
 
             break;
         }
@@ -208,6 +218,7 @@ void parseAst(Node *node, const LLVMModuleRef module)
 
     if (builder != NULL)
     {
+        LLVMBuildRetVoid(builder);
         // commitFunction(builder, blockReference);
     }
 
@@ -215,12 +226,29 @@ void parseAst(Node *node, const LLVMModuleRef module)
     free(blockName);
 }
 
+void runLLVMPasses(const LLVMModuleRef module)
+{
+    LLVMPassManagerRef passManager = LLVMCreatePassManager();
+
+    LLVMAddConstantMergePass(passManager);
+    LLVMAddGlobalOptimizerPass(passManager);
+    LLVMAddInstructionCombiningPass(passManager);
+    LLVMAddIPConstantPropagationPass(passManager);
+    LLVMAddAggressiveInstCombinerPass(passManager);
+    LLVMAddMergeFunctionsPass(passManager);
+
+    if (LLVMRunPassManager(passManager, module) == 1)
+    {
+        printf("output modified by passes\n");
+    }
+}
+
 /**
  * @brief Entry method to generate the llvm ir code
  *
  * @param root
  */
-void generateCode(Node *root)
+void generateCode(Node *root, ProgramArgs paths)
 {
     // Check if there is actually code in the file
     if (!root->leftNode && !root->rightNode)
@@ -230,22 +258,20 @@ void generateCode(Node *root)
     }
 
     // create module
-    LLVMModuleRef module = createModule(filename);
+    LLVMModuleRef module = createModule(paths.filename);
 
     // create llvm ir function
-    // createFunction(module, "main");
-    parseAst(root, module);
+    astToLLVMIR(root, module);
     printf("\n");
 
     // Analyse module
     verifyModule(module);
 
-    // write to file
-    writeLLVMIR(module);
+    // Optimise with passes
+    runLLVMPasses(module);
 
-    /// Dump the IR we emited :)
-    // if debug
-    // LLVMDumpModule(module);
+    // write to file
+    writeLLVMIR(module, paths);
 
     /// Be clean!
     LLVMDisposeModule(module);

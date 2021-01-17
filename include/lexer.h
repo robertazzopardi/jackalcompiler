@@ -9,6 +9,7 @@
 #define DIV '/'
 #define MOD '%'
 #define EXP '^'
+
 #define SPA ' '
 #define RPR ')'
 #define LPR '('
@@ -18,6 +19,8 @@
 #define CMM ','
 #define RARR '>'
 #define LARR '<'
+
+#define TYPEDEC "->"
 
 #define FUNC "func"
 #define VOID "void"
@@ -78,10 +81,12 @@ typedef struct
     size_t count;
 } Sequence;
 
-Sequence lex(FileContents filecontents);
+Sequence lex(FileContents fileContents);
 
 int isOperator(const char o);
 
 void printSequence(const Sequence seq);
+
+void cleanUpSeq(Sequence seq);
 
 #endif

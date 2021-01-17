@@ -1,9 +1,9 @@
 /**
  * @file codegen.h
- * @author Robert Azzopardi-Yashi (you@domain.com)
+ * @author robertazzopardi (robertazzopardi@icloud.com)
  * @brief Interface of the llvm ir generation code
  * @version 0.1
- * @date 2021-01-13
+ * @date 2021-01-16
  *
  * @copyright Copyright (c) 2021
  *
@@ -18,19 +18,22 @@
 
 #include <llvm-c/Core.h>
 #include <llvm-c/Analysis.h>
-#include <llvm-c/DataTypes.h>
-#include <llvm-c/Types.h>
+#include <llvm-c/Transforms/IPO.h>
+#include <llvm-c/Transforms/InstCombine.h>
+#include <llvm-c/Transforms/AggressiveInstCombine.h>
 
 #include "ast.h"
 #include "filehandler.h"
 #include "stack.h"
+
+#define PRINT "print"
 
 /**
  * @brief Entry of the code generation
  *
  * @param root
  */
-void generateCode(Node *root);
+void generateCode(Node *root, ProgramArgs paths);
 
 /**
  * @brief parse the ast created from the parser

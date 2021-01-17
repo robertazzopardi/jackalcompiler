@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../include/stack.h"
+#include "stack.h"
 
 StackNode *newNode(Node *data)
 {
