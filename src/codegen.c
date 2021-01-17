@@ -11,6 +11,48 @@
 
 #include "codegen.h"
 
+int string_ln(char *p) /* p=&str[0] */
+{
+    int count = 0;
+    while (*p != '\0')
+    {
+        count++;
+        p++;
+    }
+    return count;
+}
+
+void writeLLVMIR(const LLVMModuleRef mod, ProgramArgs paths)
+{
+    char destPath[string_ln(paths.filename) + string_ln(paths.folderpath) + string_ln(EXT_BC)];
+    strcpy(destPath, paths.folderpath);
+    strcat(destPath, paths.filename);
+    strcat(destPath, EXT_BC);
+
+    if (remove(destPath) == 0)
+    {
+        // printf("File deleted successfully");/
+    }
+    else
+    {
+        // printf("Error: unable to delete the file");
+    }
+
+    char *errors = 0;
+    if (LLVMPrintModuleToFile(mod, destPath, &errors) != 0)
+    {
+        fprintf(stderr, "error writing to file, skipping\n");
+    }
+    LLVMDisposeMessage(errors);
+
+    // llc -filetype=obj testfile.bc
+    // clang testfile.o
+
+    // llc - filetype = obj testfile.bc
+    //                      clang `llvm -
+    //                  config-- cxxflags-- ldflags-- libs` testfile.o
+}
+
 /**
  * @brief Create a Module object
  *

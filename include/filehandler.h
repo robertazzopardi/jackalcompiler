@@ -22,7 +22,7 @@
 #define SEP '/'
 #endif
 
-#include <llvm-c/Core.h>
+#include <ctype.h>
 
 #define LINE_BUFFER 80
 
@@ -77,7 +77,7 @@ ProgramArgs parseArgs(int argc, char **argv);
  * @param mod
  * @param paths
  */
-void writeLLVMIR(const LLVMModuleRef mod, ProgramArgs paths);
+// void writeLLVMIR(const LLVMModuleRef mod, ProgramArgs paths);
 
 /**
  * @brief clean up the lines read from the file
