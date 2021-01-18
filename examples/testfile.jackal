@@ -30,23 +30,28 @@
 // 	if 5 > 2
 //		print 3
 
+func name -> void
+	print 55
+
+func second -> void
+	if 5 > 3 + 6
+		print 5 + 10
+	elif 4 < 5
+		print 4 + 10
+	else
+		print 3 ^ 9
+	name
 
 func main -> void
-	print -3.6 + 1
+	print -3.6 + 1 + 1000
+	second
 
 //func main -> void
 //	print max 3 4
 
-//func name -> void
-//	print(55)
 
-func second -> void
-	if 5 > 3
-		print 5
-	elif 4 < 5
-		print 4
-	else
-		print 3 ^ 9
+
+
 
 //func test -> void
 //	if 4 > 3

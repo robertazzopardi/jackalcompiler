@@ -38,7 +38,7 @@ ProgramArgs parseArgs(int argc, char **argv)
 
     paths.folderpath = malloc(index * sizeof(*paths.folderpath));
     strncpy(paths.folderpath, paths.filepath, index);
-    paths.folderpath[index] = '\0';
+    paths.folderpath[index] = ESC;
 
     // get file name
     char *e2 = strrchr(paths.filepath, DOT);
@@ -46,7 +46,7 @@ ProgramArgs parseArgs(int argc, char **argv)
 
     paths.filename = malloc(index2 - 1 * sizeof(*paths.filename));
     strncpy(paths.filename, paths.filepath + index, index2 - index);
-    paths.filename[index2] = '\0';
+    paths.filename[index2] = ESC;
 
     // printf("\n%s %s %s\n", paths.filepath, paths.folderpath, paths.filename);
 
@@ -57,13 +57,13 @@ void parseFileLines(char line[], FileContents *allLines, FILE *inputFile)
 {
     while (fgets(line, LINE_BUFFER, inputFile) != 0)
     {
-        line[strcspn(line, "\r\n")] = '\0';
+        line[strcspn(line, "\r\n")] = ESC;
 
         char *result = strstr(line, "//");
         size_t position = result - line;
 
         if (position < strlen(line))
-            line[position] = '\0';
+            line[position] = ESC;
 
         if (strlen(line) > 0)
         {

@@ -8,7 +8,7 @@
 #include "ast.h"
 #include "stack.h"
 
-size_t FindIndex(const Token *a, size_t size, Attribute attribute, const size_t i)
+size_t FindIndex(const Token *a, const size_t size, const Attribute attribute, const size_t i)
 {
     size_t index = i;
 
@@ -18,46 +18,47 @@ size_t FindIndex(const Token *a, size_t size, Attribute attribute, const size_t 
     return (index == size ? -1 : index);
 }
 
-void eval(Node *op, Node *result, Node *e1, Node *e2)
-{
-    switch (op->data.value[0])
-    {
-    case ADD:
-        snprintf(result->data.value, 10, "%.6g", strtof(e1->data.value, NULL) + strtof(e2->data.value, NULL));
-        break;
-    case SUB:
-        snprintf(result->data.value, 10, "%.6g", strtof(e1->data.value, NULL) - strtof(e2->data.value, NULL));
-        break;
-    case MUL:
-        snprintf(result->data.value, 10, "%.6g", strtof(e1->data.value, NULL) * strtof(e2->data.value, NULL));
-        break;
-    case DIV:
-        snprintf(result->data.value, 10, "%.6g", strtof(e1->data.value, NULL) / strtof(e2->data.value, NULL));
-        break;
-    case MOD:
-        snprintf(result->data.value, 10, "%d", atoi(e1->data.value) % atoi(e2->data.value));
-        break;
-    case EXP:
-        snprintf(result->data.value, 10, "%.6g", pow(strtof(e1->data.value, NULL), strtof(e2->data.value, NULL)));
-        break;
-    case LARR:
-        snprintf(result->data.value, 10, "%d", strtof(e1->data.value, NULL) < strtof(e2->data.value, NULL));
-        break;
-    case RARR:
-        snprintf(result->data.value, 10, "%d", strtof(e1->data.value, NULL) > strtof(e2->data.value, NULL));
-        break;
-    default:
-        printf("Error cannot evaluate expression\n");
-        break;
-    }
-}
-
 Node *evaluateExpression(Node *op, Node *e1, Node *e2)
 {
     Node *result = malloc(sizeof(*result));
     result->data.value = malloc(sizeof(*result->data.value));
 
-    eval(op, result, e1, e2);
+    char o = op->data.value[0];
+
+    char *fmt = GET_FORMAT(o);
+
+    printf("%s\n", op->data.value);
+
+    switch (o)
+    {
+    case ADD:
+        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) + strtof(e2->data.value, NULL));
+        break;
+    case SUB:
+        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) - strtof(e2->data.value, NULL));
+        break;
+    case MUL:
+        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) * strtof(e2->data.value, NULL));
+        break;
+    case DIV:
+        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) / strtof(e2->data.value, NULL));
+        break;
+    case MOD:
+        snprintf(result->data.value, 10, fmt, atoi(e1->data.value) % atoi(e2->data.value));
+        break;
+    case EXP:
+        snprintf(result->data.value, 10, fmt, pow(strtof(e1->data.value, NULL), strtof(e2->data.value, NULL)));
+        break;
+    case LARR:
+        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) < strtof(e2->data.value, NULL));
+        break;
+    case RARR:
+        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) > strtof(e2->data.value, NULL));
+        break;
+    default:
+        printf("Error cannot evaluate expression\n");
+        break;
+    }
 
     result->data.attr = strchr(result->data.value, DOT) ? _float : _int;
 
@@ -187,7 +188,6 @@ Node *shuntingYardPostFix(const Sequence seq, const size_t start, const size_t e
         default:
             break;
         }
-
     }
 
     free(operator_stack);
@@ -277,7 +277,7 @@ Node *parse(Sequence seq)
         }
     }
 
-    print2d(root, 0);
+    // print2d(root, 0);
 
     return root;
 }

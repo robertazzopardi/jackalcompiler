@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include <llvm-c/Core.h>
+#include <llvm-c/Types.h>
 #include <llvm-c/Analysis.h>
 #include <llvm-c/Transforms/IPO.h>
 #include <llvm-c/Transforms/InstCombine.h>

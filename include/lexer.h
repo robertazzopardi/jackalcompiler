@@ -20,7 +20,7 @@
 #define RARR '>'
 #define LARR '<'
 
-#define TYPEDEC "->"
+#define RET_TYPE "->"
 
 #define FUNC "func"
 #define VOID "void"
@@ -29,6 +29,8 @@
 #define ELIF "elif"
 #define ELSE "else"
 #define CONDITION "condition"
+
+#define GET_FORMAT(o) ((o == MOD || o == LARR || o == RARR) ? "%d" : "%.6g")
 
 typedef enum
 {
@@ -81,12 +83,12 @@ typedef struct
     size_t count;
 } Sequence;
 
-Sequence lex(FileContents fileContents);
-
 int isOperator(const char o);
 
 void printSequence(const Sequence seq);
 
 void cleanUpSeq(Sequence seq);
+
+Sequence lex(FileContents fileContents);
 
 #endif

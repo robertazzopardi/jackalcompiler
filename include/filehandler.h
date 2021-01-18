@@ -12,6 +12,8 @@
 #ifndef _FILE_HANDLER_
 #define _FILE_HANDLER_
 
+#include <ctype.h>
+
 /**
  * @brief determine the path seperators
  *
@@ -22,15 +24,15 @@
 #define SEP '/'
 #endif
 
-#include <ctype.h>
-
 #define LINE_BUFFER 80
+
+#define ESC '\0'
 
 /**
  * @brief file extensions and file args
  *
  */
-#define EXT_SRC ".lambda"
+#define EXT_SRC ".jackal"
 #define EXT_BC ".bc"
 #define DOT '.'
 

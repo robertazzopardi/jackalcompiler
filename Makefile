@@ -5,8 +5,8 @@
 
 # define the C compiler to use
 CC = 		clang
-# CC = 		gcc
 
+# define the c++ compiler to use
 CPP = 		clang++
 
 # define any compile-time flags
@@ -15,7 +15,8 @@ CFLAGS		:= -Wall -Wextra -g
 CFLAGS 		+= `llvm-config --cflags`
 
 # LDFLAGS := `llvm-config --cxxflags --ldflags --libs core executionengine jit interpreter analysis native bitwriter --system-libs`
-LDFLAGS 	:= `llvm-config --cxxflags --ldflags --libs core analysis passes --system-libs`
+# LDFLAGS 	:= `llvm-config --cxxflags --ldflags --libs core analysis passes --system-libs`
+LDFLAGS 	:= `llvm-config --ldflags --libs --system-libs`
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
@@ -38,7 +39,7 @@ LIB			:= lib
 TESTS 		:= test
 
 # define test command line arguements
-TESTARGS := -run -asm ./examples/testfile.lambda
+TESTARGS := -run -asm ./examples/testfile.jackal
 
 ifeq ($(OS),Windows_NT)
 MAIN	:= main.exe
@@ -102,6 +103,7 @@ analyse:
 clean:
 	$(RM) $(OUTPUTMAIN)
 	$(RM) $(call FIXPATH,$(OBJECTS))
+	$(RM) examples/*.o examples/*.out
 
 run: all
 	./$(BIN)/$(MAIN) $(TESTARGS)

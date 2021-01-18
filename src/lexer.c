@@ -48,18 +48,24 @@ char *trimwhitespace(char *str)
         end--;
 
     // Write new null terminator character
-    end[1] = '\0';
+    end[1] = ESC;
 
     return str;
 }
 
 int isNumeric(const char *s)
 {
-    if (s == NULL || *s == '\0' || isspace(*s))
+    if (s == NULL || *s == ESC || isspace(*s))
         return 0;
     char *p;
     strtod(s, &p);
-    return *p == '\0';
+    return *p == ESC;
+}
+
+static inline void setTokenValueAttr(const Sequence *seq, char *value, const Attribute attr)
+{
+    seq->tokens[seq->count - 1].value = value;
+    seq->tokens[seq->count - 1].attr = attr;
 }
 
 Sequence lex(FileContents fileContents)
@@ -87,13 +93,11 @@ Sequence lex(FileContents fileContents)
 
             if (strcmp(rawToken, FUNC) == 0)
             {
-                seq.tokens[seq.count - 1].value = rawToken;
-                seq.tokens[seq.count - 1].attr = _funcDef;
+                setTokenValueAttr(&seq, rawToken, _funcDef);
             }
             else if (seq.tokens[seq.count - 2].attr == _funcDef)
             {
-                seq.tokens[seq.count - 1].value = rawToken;
-                seq.tokens[seq.count - 1].attr = _funcName;
+                setTokenValueAttr(&seq, rawToken, _funcName);
             }
             else if (isNumeric(rawToken))
             {
@@ -101,95 +105,81 @@ Sequence lex(FileContents fileContents)
 
                 if (firstnum == 0 && (seq.tokens[seq.count - 2].attr != _int || seq.tokens[seq.count - 2].attr != _float))
                 {
-                    seq.tokens[seq.count - 1].value = "(";
-                    seq.tokens[seq.count - 1].attr = _leftBracket;
-
+                    setTokenValueAttr(&seq, "(", _leftBracket);
                     allocate(&seq);
-
                     firstnum = 1;
                 }
 
-                seq.tokens[seq.count - 1].value = rawToken;
-
-                seq.tokens[seq.count - 1].attr = strchr(rawToken, DOT) ? _float : _int;
+                setTokenValueAttr(&seq, rawToken, strchr(rawToken, DOT) ? _float : _int);
 
                 if (tmp == NULL)
                 {
                     allocate(&seq);
-
-                    seq.tokens[seq.count - 1].value = ")";
-                    seq.tokens[seq.count - 1].attr = _rightBracket;
-
+                    setTokenValueAttr(&seq, ")", _rightBracket);
                     firstnum = 0;
                 }
 
                 rawToken = tmp;
                 continue;
             }
-            else if (strcmp(rawToken, TYPEDEC) == 0)
+            else if (strcmp(rawToken, RET_TYPE) == 0)
             {
-                seq.tokens[seq.count - 1].value = rawToken;
-                seq.tokens[seq.count - 1].attr = _funcReturnType;
+                setTokenValueAttr(&seq, rawToken, _funcReturnType);
             }
             else if (seq.tokens[seq.count - 2].attr == _funcReturnType)
             {
-                seq.tokens[seq.count - 1].value = rawToken;
-                seq.tokens[seq.count - 1].attr = _type;
+                setTokenValueAttr(&seq, rawToken, _type);
             }
             else if (isOperator(rawToken[strlen(rawToken) - 1]))
             {
-                // printf("%s\n", rawToken);
                 char c = rawToken[strlen(rawToken) - 1];
 
-                seq.tokens[seq.count - 1].value = rawToken;
-
-                if (c == SUB || c == ADD)
+                switch (c)
                 {
+                case SUB:
+                case ADD:
                     seq.tokens[seq.count - 1].precedence = 2;
                     seq.tokens[seq.count - 1].associate = left_to_right;
-                }
-                else if (c == MUL || c == DIV || c == MOD)
-                {
+                    break;
+                case MUL:
+                case DIV:
+                case MOD:
                     seq.tokens[seq.count - 1].precedence = 3;
                     seq.tokens[seq.count - 1].associate = left_to_right;
-                }
-                else if (c == LARR || c == RARR)
-                {
+                    break;
+                case LARR:
+                case RARR:
                     seq.tokens[seq.count - 1].precedence = 1;
                     seq.tokens[seq.count - 1].associate = left_to_right;
-                }
-                else
-                {
+                    break;
+                default:
                     seq.tokens[seq.count - 1].precedence = 4;
                     seq.tokens[seq.count - 1].associate = right_to_left;
+                    break;
                 }
 
-                seq.tokens[seq.count - 1].attr = _operator;
+                setTokenValueAttr(&seq, rawToken, _operator);
             }
 
             else if (strcmp(rawToken, IF) == 0)
             {
-                seq.tokens[seq.count - 1].value = rawToken;
-                seq.tokens[seq.count - 1].attr = _if;
+                setTokenValueAttr(&seq, rawToken, _if);
             }
 
             else if (strcmp(rawToken, ELIF) == 0)
             {
-                seq.tokens[seq.count - 1].value = rawToken;
-                seq.tokens[seq.count - 1].attr = _elif;
+                setTokenValueAttr(&seq, rawToken, _elif);
             }
 
             else if (strcmp(rawToken, ELSE) == 0)
             {
-                seq.tokens[seq.count - 1].value = rawToken;
-                seq.tokens[seq.count - 1].attr = _else;
+                setTokenValueAttr(&seq, rawToken, _else);
             }
 
             // used for function calls for now
             else
             {
-                seq.tokens[seq.count - 1].value = rawToken;
-                seq.tokens[seq.count - 1].attr = _funcCall;
+                setTokenValueAttr(&seq, rawToken, _funcCall);
             }
 
             // Get next rawToken
