@@ -14,12 +14,6 @@
 #include "ast.h"
 #include "codegen.h"
 
-/**
- * @brief Start of program
- * @param argc
- * @param argv
- * @return int
- */
 int main(int argc, char **argv)
 {
 	ProgramArgs args = parseArgs(argc, argv);

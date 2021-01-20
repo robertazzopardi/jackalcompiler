@@ -11,13 +11,7 @@
 
 #include "codegen.h"
 
-/**
- * @brief Gets the length of a string
- *
- * @param p
- * @return int
- */
-int string_ln(char *p)
+int getStringLength(char *p)
 {
     int count = 0;
     while (*p != ESC)
@@ -28,15 +22,9 @@ int string_ln(char *p)
     return count;
 }
 
-/**
- * @brief Write the LLVM Module .bc to a file
- *
- * @param mod
- * @param paths
- */
 void writeLLVMIR(const LLVMModuleRef mod, ProgramArgs paths)
 {
-    char destPath[string_ln(paths.filename) + string_ln(paths.folderpath) + string_ln(EXT_BC)];
+    char destPath[strlen(paths.filename) + strlen(paths.folderpath) + strlen(EXT_BC)];
     strcpy(destPath, paths.folderpath);
     strcat(destPath, paths.filename);
     strcat(destPath, EXT_BC);
@@ -65,23 +53,11 @@ void writeLLVMIR(const LLVMModuleRef mod, ProgramArgs paths)
     //                  config-- cxxflags-- ldflags-- libs` testfile.o
 }
 
-/**
- * @brief Get the Module object
- *
- * @param moduleName
- * @return LLVMModuleRef
- */
 LLVMModuleRef getModule(const char *moduleName)
 {
     return LLVMModuleCreateWithName(moduleName);
 }
 
-/**
- * @brief Get the Block Name object
- *
- * @param funcName
- * @return char*
- */
 char *getBlockName(const char *funcName)
 {
     char *blockName;
@@ -91,11 +67,6 @@ char *getBlockName(const char *funcName)
     return blockName;
 }
 
-/**
- * @brief Validates a module through LLVM
- *
- * @param module
- */
 void verifyModule(const LLVMModuleRef module)
 {
     char *error = NULL;
@@ -103,12 +74,6 @@ void verifyModule(const LLVMModuleRef module)
     LLVMDisposeMessage(error);
 }
 
-/**
- * @brief Get the Arg Value object
- *
- * @param token
- * @return LLVMValueRef
- */
 static inline LLVMValueRef getArgValue(Token token)
 {
     LLVMValueRef value = NULL;
@@ -126,12 +91,6 @@ static inline LLVMValueRef getArgValue(Token token)
     return value;
 }
 
-/**
- * @brief Get the Format Value object
- *
- * @param attr
- * @return char*
- */
 static inline char *getFormatValue(Attribute attr)
 {
     char *value = NULL;
@@ -149,12 +108,6 @@ static inline char *getFormatValue(Attribute attr)
     return value;
 }
 
-/**
- * @brief Get the Type Name object
- *
- * @param attr
- * @return char*
- */
 static inline char *getTypeName(Attribute attr)
 {
     char *value = NULL;
@@ -174,13 +127,6 @@ static inline char *getTypeName(Attribute attr)
     return value;
 }
 
-/**
- * @brief Generate a call to printf
- *
- * @param module
- * @param builder
- * @param token
- */
 void callPrintf(const LLVMModuleRef module, const LLVMBuilderRef builder, Token token)
 {
     char *fmtName = getTypeName(token.attr);
@@ -222,20 +168,14 @@ void callPrintf(const LLVMModuleRef module, const LLVMBuilderRef builder, Token 
 //     LLVMIntSLE      /**< signed less or equal */
 // } LLVMIntPredicate;
 
-/**
- * @brief Parse the ast created from the parser
- *
- * @param node
- * @param module
- */
 void astToLLVMIR(Node *node, const LLVMModuleRef module)
 {
     // LLVMTypeRef *parameters = NULL;
     // unsigned parameterLength = 0;
-    LLVMTypeRef returnType;
-    LLVMValueRef valueRef;
-    LLVMBasicBlockRef blockReference;
-    LLVMBuilderRef builder;
+    // LLVMTypeRef returnType;
+    // LLVMValueRef valueRef;
+    // LLVMBasicBlockRef blockReference;
+    LLVMBuilderRef builder = NULL;
 
     char *blockName = NULL;
 
@@ -262,7 +202,7 @@ void astToLLVMIR(Node *node, const LLVMModuleRef module)
             break;
 
         case _funcDef:
-            if (builder != NULL)
+            if (builder)
             {
                 LLVMBuildRetVoid(builder);
             }
@@ -274,14 +214,15 @@ void astToLLVMIR(Node *node, const LLVMModuleRef module)
 
             if (curr->type == t_void)
             {
-                returnType = LLVMFunctionType(LLVMVoidType(), NULL, 0, LLVMRealPredicateFalse);
-                valueRef = LLVMAddFunction(module, funcName, returnType);
+                LLVMTypeRef returnType = LLVMFunctionType(LLVMVoidType(), NULL, 0, LLVMRealPredicateFalse);
+                LLVMValueRef valueRef = LLVMAddFunction(module, funcName, returnType);
 
                 blockName = getBlockName(funcName);
 
                 builder = LLVMCreateBuilder();
 
-                blockReference = LLVMAppendBasicBlock(valueRef, blockName);
+                LLVMBasicBlockRef blockReference = LLVMAppendBasicBlock(valueRef, blockName);
+                free(blockName);
                 LLVMPositionBuilderAtEnd(builder, blockReference);
             }
 
@@ -322,14 +263,9 @@ void astToLLVMIR(Node *node, const LLVMModuleRef module)
     }
 
     free(st);
-    free(blockName);
+    // free(blockName);
 }
 
-/**
- * @brief Run the optimising passes on the created module
- *
- * @param module
- */
 void runLLVMPasses(const LLVMModuleRef module)
 {
     LLVMPassManagerRef passManager = LLVMCreatePassManager();
@@ -343,16 +279,10 @@ void runLLVMPasses(const LLVMModuleRef module)
 
     if (LLVMRunPassManager(passManager, module) == 1)
     {
-        printf("output modified by passes\n");
+        printf("output modified by llvm optimiser\n");
     }
 }
 
-/**
- * @brief Entry method to generate the llvm ir code
- *
- * @param root
- * @param paths
- */
 void generateCode(Node *root, ProgramArgs paths)
 {
     // Check if there is actually code in the file
@@ -378,7 +308,7 @@ void generateCode(Node *root, ProgramArgs paths)
     // write to file
     writeLLVMIR(module, paths);
 
-    /// Be clean!
+    // Be clean!
     LLVMDisposeModule(module);
 }
 

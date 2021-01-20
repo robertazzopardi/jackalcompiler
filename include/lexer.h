@@ -1,3 +1,14 @@
+/**
+ * @file lexer.h
+ * @author robertazzopardi (robertazzopardi@icloud.com)
+ * @brief Declaration of the lexer class
+ * @version 0.1
+ * @date 2021-01-19
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
+
 #ifndef _LEXER_
 #define _LEXER_
 

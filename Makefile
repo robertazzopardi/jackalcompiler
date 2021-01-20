@@ -9,10 +9,16 @@ CC = 		clang
 # define the c++ compiler to use
 CPP = 		clang++
 
+# scan-build
+SCAN =		scan-build
+
+# scan flags
+SCANFLAGS =	-analyze-headers -no-failure-reports -enable-checker deadcode.DeadStores
+
 # define any compile-time flags
 CFLAGS		:= -Wall -Wextra -g
 
-CFLAGS 		+= `llvm-config --cflags`
+LLVMCFLAGS 	:= `llvm-config --cflags`
 
 # LDFLAGS := `llvm-config --cxxflags --ldflags --libs core executionengine jit interpreter analysis native bitwriter --system-libs`
 # LDFLAGS 	:= `llvm-config --cxxflags --ldflags --libs core analysis passes --system-libs`
@@ -85,19 +91,23 @@ $(BIN):
 	$(MD) $(BIN)
 
 $(MAIN): $(OBJECTS)
-	$(CPP) $(CFLAGS) $(INCLUDES) $(LDFLAGS) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
+	$(CPP) $(CFLAGS) $(LLVMCFLAGS) $(INCLUDES) $(LDFLAGS) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
 # $(CC) $(CFLAGS) $(INCLUDES) $(LDFLAGS) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
 # $(CPP) --analyze $(CFLAGS) $(INCLUDES) $(LDFLAGS) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
 
 analyse:
-	scan-build make
+# scan-build make
+	clear
+	for file in $(SOURCES) ; do \
+    	$(SCAN) $(SCANFLAGS) $(CC) --analyze $(LLVMCFLAGS) $(INCLUDES) $$file ; \
+	done
 
 # this is a suffix replacement rule for building .o's from .c's
 # it uses automatic variables $<: the name of the prerequisite of
 # the rule(a .c file) and $@: the name of the target of the rule (a .o file)
 # (see the gnu make manual section about automatic variables)
 .c.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
+	$(CC) $(CFLAGS) $(LLVMCFLAGS) $(INCLUDES) -c $<  -o $@
 
 .PHONY: clean
 clean:

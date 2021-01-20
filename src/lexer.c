@@ -24,7 +24,7 @@ static inline void allocate(Sequence *seq)
     seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
 }
 
-void cleanUpSeq(Sequence seq)
+inline void cleanUpSeq(Sequence seq)
 {
     // while (seq.count--)
     //     free(seq.tokens[seq.count].value);
