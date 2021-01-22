@@ -43,6 +43,10 @@
 
 #define GET_FORMAT(o) ((o == MOD || o == LARR || o == RARR) ? "%d" : "%.6g")
 
+/**
+ * @brief Built In types
+ *
+ */
 typedef enum
 {
     t_int,
@@ -50,6 +54,10 @@ typedef enum
     t_void
 } Type;
 
+/**
+ * @brief Token Attributes
+ *
+ */
 typedef enum
 {
     _none,
@@ -73,6 +81,10 @@ typedef enum
     _condition
 } Attribute;
 
+/**
+ * @brief Operator Associate
+ *
+ */
 typedef enum
 {
     none,
@@ -80,6 +92,10 @@ typedef enum
     right_to_left
 } Associates;
 
+/**
+ * @brief Token
+ *
+ */
 typedef struct
 {
     char *value;
@@ -88,18 +104,47 @@ typedef struct
     Associates associate;
 } Token;
 
+/**
+ * @brief Array of tokens and array length
+ *
+ */
 typedef struct
 {
     Token *tokens;
     size_t count;
 } Sequence;
 
-int isOperator(const char o);
-
+/**
+ * @brief Print the sequence in a line
+ *
+ * @param seq
+ */
 void printSequence(const Sequence seq);
 
+/**
+ * @brief Free the allocated sequence memory
+ *
+ * @param seq
+ */
 void cleanUpSeq(Sequence seq);
 
+/**
+ * @brief Tokenize the program file and return a sequence of the tokens
+ *
+ * @param fileContents
+ * @return Sequence
+ */
 Sequence lex(FileContents fileContents);
+
+/**
+ * @brief Check if a character is an operator
+ *
+ * @param o
+ * @return int
+ */
+static inline int isOperator(const char o)
+{
+    return (o == MOD || o == DIV || o == MUL || o == ADD || o == SUB || o == EXP || o == LARR || o == RARR);
+}
 
 #endif

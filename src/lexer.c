@@ -13,11 +13,6 @@ inline void printSequence(const Sequence seq)
     printf("\n");
 }
 
-inline int isOperator(const char o)
-{
-    return (o == MOD || o == DIV || o == MUL || o == ADD || o == SUB || o == EXP || o == LARR || o == RARR);
-}
-
 static inline void allocate(Sequence *seq)
 {
     seq->count++;
@@ -62,7 +57,7 @@ int isNumeric(const char *s)
     return *p == ESC;
 }
 
-static inline void setTokenValueAttr(const Sequence *seq, char *value, const Attribute attr)
+void setTokenValueAttr(const Sequence *seq, char *value, const Attribute attr)
 {
     seq->tokens[seq->count - 1].value = value;
     seq->tokens[seq->count - 1].attr = attr;
@@ -76,7 +71,7 @@ Sequence lex(FileContents fileContents)
     {
         char *line = fileContents.lines[i];
 
-        int firstnum = 0;
+        char firstnum = 0;
 
         char *rawToken;
 
@@ -101,7 +96,6 @@ Sequence lex(FileContents fileContents)
             }
             else if (isNumeric(rawToken))
             {
-                char *tmp = strtok(NULL, " ");
 
                 if (firstnum == 0 && (seq.tokens[seq.count - 2].attr != _int || seq.tokens[seq.count - 2].attr != _float))
                 {
@@ -111,6 +105,8 @@ Sequence lex(FileContents fileContents)
                 }
 
                 setTokenValueAttr(&seq, rawToken, strchr(rawToken, DOT) ? _float : _int);
+
+                char *tmp = strtok(NULL, " ");
 
                 if (tmp == NULL)
                 {
@@ -132,7 +128,9 @@ Sequence lex(FileContents fileContents)
             }
             else if (isOperator(rawToken[strlen(rawToken) - 1]))
             {
-                char c = rawToken[strlen(rawToken) - 1];
+                setTokenValueAttr(&seq, rawToken, _operator);
+
+                char c = rawToken[0];
 
                 switch (c)
                 {
@@ -153,12 +151,8 @@ Sequence lex(FileContents fileContents)
                     seq.tokens[seq.count - 1].associate = left_to_right;
                     break;
                 default:
-                    seq.tokens[seq.count - 1].precedence = 4;
-                    seq.tokens[seq.count - 1].associate = right_to_left;
                     break;
                 }
-
-                setTokenValueAttr(&seq, rawToken, _operator);
             }
 
             else if (strcmp(rawToken, IF) == 0)

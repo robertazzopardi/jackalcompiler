@@ -18,7 +18,8 @@ int main(int argc, char **argv)
 {
 	ProgramArgs args = parseArgs(argc, argv);
 
-	// start complination
+	// start of complination
+
 	FileContents filelines = readFile(args.filepath);
 
 	Sequence seq = lex(filelines);
@@ -31,7 +32,7 @@ int main(int argc, char **argv)
 	cleanUpFileContents(filelines);
 	freeTree(ast);
 	cleanUpSeq(seq);
-	// freePathVars(args);
+	freePathVars(args);
 
 	return 0;
 }

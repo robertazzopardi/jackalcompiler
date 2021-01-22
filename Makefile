@@ -16,7 +16,7 @@ SCAN =		scan-build
 SCANFLAGS =	-analyze-headers -no-failure-reports -enable-checker deadcode.DeadStores
 
 # define any compile-time flags
-CFLAGS		:= -Wall -Wextra -g
+CFLAGS		:= -Wall -Wextra -g -fsanitize=leak
 
 LLVMCFLAGS 	:= `llvm-config --cflags`
 
@@ -125,7 +125,7 @@ check: clean all
 	cppcheck -f --enable=all --inconclusive --check-library --debug-warnings --suppress=missingIncludeSystem --check-config $(INCLUDES) ./$(SRC)
 # cppcheck --enable=all --suppress=missingIncludeSystem --check-config ./$(SRC)
 
-# valgrind command to check memory
+# valgrind command to check memory if valgrind is available on your system
 valgrind:
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes $(INCLUDES) ./$(BIN)/$(MAIN) $(TESTARGS)
 

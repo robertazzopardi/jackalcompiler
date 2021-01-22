@@ -20,60 +20,50 @@ size_t findIndex(const Token *a, const size_t size, const Attribute attribute, c
 
 Node *evaluateExpression(Node *op, Node *e1, Node *e2)
 {
-    Node *result = malloc(sizeof(*result));
-    result->data.value = malloc(sizeof(*result->data.value));
-
     char o = op->data.value[0];
-    // if (!isOperator(o)){
-    //     return NULL;
-    // }
 
     char *fmt = GET_FORMAT(o);
-
-    // printf("%s\n", op->data.value);
-    // printf("%s %s %s\n", op->data.value, e1->data.value, e2->data.value);
 
     switch (o)
     {
     case ADD:
-        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) + strtof(e2->data.value, NULL));
+        sprintf(op->data.value, fmt, strtold(e1->data.value, NULL) + strtold(e2->data.value, NULL));
         break;
     case SUB:
-        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) - strtof(e2->data.value, NULL));
+        sprintf(op->data.value, fmt, strtold(e1->data.value, NULL) - strtold(e2->data.value, NULL));
         break;
     case MUL:
-        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) * strtof(e2->data.value, NULL));
+        sprintf(op->data.value, fmt, strtold(e1->data.value, NULL) * strtold(e2->data.value, NULL));
         break;
     case DIV:
-        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) / strtof(e2->data.value, NULL));
+        sprintf(op->data.value, fmt, strtold(e1->data.value, NULL) / strtold(e2->data.value, NULL));
         break;
     case MOD:
-        snprintf(result->data.value, 10, fmt, atoi(e1->data.value) % atoi(e2->data.value));
+        sprintf(op->data.value, fmt, strtoll(e1->data.value, (char **)NULL, 10) % strtoll(e2->data.value, (char **)NULL, 10));
         break;
     case EXP:
-        snprintf(result->data.value, 10, fmt, pow(strtof(e1->data.value, NULL), strtof(e2->data.value, NULL)));
+        sprintf(op->data.value, fmt, pow(strtold(e1->data.value, NULL), strtold(e2->data.value, NULL)));
         break;
     case LARR:
-        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) < strtof(e2->data.value, NULL));
+        sprintf(op->data.value, fmt, strtold(e1->data.value, NULL) < strtold(e2->data.value, NULL));
         break;
     case RARR:
-        snprintf(result->data.value, 10, fmt, strtof(e1->data.value, NULL) > strtof(e2->data.value, NULL));
+        sprintf(op->data.value, fmt, strtold(e1->data.value, NULL) > strtold(e2->data.value, NULL));
         break;
     default:
         printf("Error cannot evaluate expression %c\n", o);
         break;
     }
 
-    result->data.attr = strchr(result->data.value, DOT) ? _float : _int;
+    op->data.attr = strchr(op->data.value, DOT) ? _float : _int;
 
-    free(op);
+    op->rightNode = NULL;
+    op->leftNode = NULL;
+
     free(e1);
     free(e2);
 
-    result->rightNode = NULL;
-    result->leftNode = NULL;
-
-    return result;
+    return op;
 }
 
 void addRemainingOperators(StackNode **operator_stack, StackNode **output_stack, size_t *output_size)
@@ -135,10 +125,6 @@ Node *shuntingYardPostFix(const Sequence seq, const size_t start, const size_t e
 
     size_t output_size = 0;
 
-    size_t bracket_count = 0;
-
-    // printf("%lu %lu\n", start, end);
-
     for (size_t i = start; i < end; i++)
     {
         Token token = seq.tokens[i];
@@ -153,10 +139,6 @@ Node *shuntingYardPostFix(const Sequence seq, const size_t start, const size_t e
         case _operator:
         case _leftBracket:
         case _rightBracket:
-            if (token.attr == _leftBracket)
-                bracket_count++;
-            if (token.attr == _rightBracket)
-                bracket_count--;
 
             if (token.attr != _leftBracket)
             {
@@ -184,11 +166,6 @@ Node *shuntingYardPostFix(const Sequence seq, const size_t start, const size_t e
             if (token.attr != _rightBracket)
                 push(&operator_stack, newNodeLeaf(token));
 
-            // clean up and push to the main stack
-            if (bracket_count == 0)
-            {
-                addRemainingOperators(&operator_stack, &output_stack, &output_size);
-            }
             break;
 
         default:
@@ -196,12 +173,14 @@ Node *shuntingYardPostFix(const Sequence seq, const size_t start, const size_t e
         }
     }
 
+    addRemainingOperators(&operator_stack, &output_stack, &output_size);
+
     free(operator_stack);
 
     return pop(&output_stack);
 }
 
-void addNodeRight(Node **curr, Node **ifRoot, Token token)
+void addConditionNode(Node **curr, Node **ifRoot, Token token)
 {
     *ifRoot = *curr;
     if (*curr)
@@ -233,37 +212,39 @@ Node *parse(Sequence seq)
         switch (token.attr)
         {
         case _funcDef:
-            curr = findLastElement(&root);
+            curr = findRightmostElement(&root);
         case _funcCall:
-            if (curr != NULL && curr->leftNode)
+            if (curr && curr->leftNode)
             {
                 curr->rightNode = calloc(1, sizeof(*curr->rightNode));
+                curr->rightNode->parent = curr;
                 curr = curr->rightNode;
             }
-            if (curr != NULL)
+            if (curr)
                 curr->data = token;
             break;
         case _funcName:
-            if (curr != NULL)
+            if (curr)
             {
                 curr->leftNode = calloc(1, sizeof(*curr->leftNode));
+                curr->leftNode->parent = curr;
                 curr = curr->leftNode;
                 curr->data = token;
             }
             break;
         case _type:
-            if (strcmp(token.value, VOID) == 0 && curr != NULL)
+            if (strcmp(token.value, VOID) == 0 && curr)
                 curr->type = t_void;
 
-            if (curr != NULL)
+            if (curr)
             {
                 curr->leftNode = calloc(1, sizeof(*curr->leftNode));
+                curr->leftNode->parent = curr;
                 curr = curr->leftNode;
             }
             break;
-
         case _if:
-            addNodeRight(&curr, &ifRoot, token);
+            addConditionNode(&curr, &ifRoot, token);
             break;
         case _elif:
         case _else:
@@ -271,37 +252,35 @@ Node *parse(Sequence seq)
             if (curr)
             {
                 curr->rightNode = calloc(1, sizeof(*curr->rightNode));
+                curr->rightNode->parent = curr;
+                // curr->rightNode->parent = ifRoot;
+
                 curr = curr->rightNode;
-                addNodeRight(&curr, &ifRoot, token);
+                addConditionNode(&curr, &ifRoot, token);
             }
             break;
-        case _funcReturnType:
-            break;
         case _leftBracket:
-
-            if (curr != NULL)
+            if (curr)
             {
                 size_t n = findIndex(seq.tokens, seq.count, _rightBracket, i);
-
                 curr->leftNode = shuntingYardPostFix(seq, i, n + 1);
                 i = n;
             }
-
             break;
         case _rightBracket:
+        case _funcReturnType:
             break;
         case _int:
         case _float:
-            if (curr != NULL)
+            if (curr)
                 curr->leftNode = shuntingYardPostFix(seq, i, seq.count);
             break;
-
         default:
             break;
         }
     }
 
-    // print2d(root, 0);
+    print2d(root, 0);
 
     return root;
 }

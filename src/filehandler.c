@@ -4,33 +4,26 @@
 
 #include "filehandler.h"
 
-// char *filepath;
-// char *folderpath;
-// char *filename;
-
+/* needs rework */
 ProgramArgs parseArgs(int argc, char **argv)
 {
-    int i = 0;
+    ProgramArgs paths;
 
-    // while (strstr(argv[i], EXT_SRC) == NULL)
-    //     i++;
-    for (i = 0; i < argc; i++)
+    for (int i = 0; i < argc; i++)
     {
+        // Break when .jackal extension is found
         if (strstr(argv[i], EXT_SRC) != NULL)
         {
+            paths.filepath = argv[i];
             break;
         }
     }
 
-    if (i == 0)
+    if (paths.filepath == NULL)
     {
-        printf("file not found");
+        printf("file not found\n");
         exit(0);
     }
-
-    ProgramArgs paths;
-
-    paths.filepath = argv[i];
 
     // get folder path
     char *e1 = strrchr(paths.filepath, SEP);
@@ -47,8 +40,6 @@ ProgramArgs parseArgs(int argc, char **argv)
     paths.filename = malloc(index2 - 1 * sizeof(*paths.filename));
     strncpy(paths.filename, paths.filepath + index, index2 - index);
     paths.filename[index2] = ESC;
-
-    // printf("\n%s %s %s\n", paths.filepath, paths.folderpath, paths.filename);
 
     return paths;
 }
@@ -98,12 +89,12 @@ FileContents readFile(const char *filepath)
     return allLines;
 }
 
-// void freePathVars(ProgramArgs paths)
-// {
-//     // free(paths.filename);
-//     // free(paths.folderpath);
-//     // free(filepath);
-// }
+void freePathVars(ProgramArgs paths)
+{
+    free(paths.filename);
+    free(paths.folderpath);
+    // free(paths.filepath);
+}
 
 void cleanUpFileContents(FileContents lines)
 {

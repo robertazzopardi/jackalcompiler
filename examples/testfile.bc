@@ -6,7 +6,7 @@ source_filename = "testfile"
 
 define void @name() local_unnamed_addr {
 name_block:
-  %0 = call i32 (i8*, ...) @printf(i8* nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @int_fmt.6, i64 0, i64 0), i32 55)
+  %0 = call i32 (i8*, ...) @printf(i8* nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @int_fmt.6, i64 0, i64 0), i32 1)
   ret void
 }
 
@@ -16,14 +16,14 @@ define void @second() local_unnamed_addr {
 second_block:
   %0 = call i32 (i8*, ...) @printf(i8* nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @int_fmt.6, i64 0, i64 0), i32 15)
   %1 = call i32 (i8*, ...) @printf(i8* nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @int_fmt.6, i64 0, i64 0), i32 14)
-  %2 = call i32 (i8*, ...) @printf(i8* nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @int_fmt.6, i64 0, i64 0), i32 19683)
+  %2 = call i32 (i8*, ...) @printf(i8* nonnull dereferenceable(1) getelementptr inbounds ([4 x i8], [4 x i8]* @int_fmt.6, i64 0, i64 0), i32 29)
   call void @name()
   ret void
 }
 
 define void @main() local_unnamed_addr {
 main_block:
-  %0 = call i32 (i8*, ...) @printf(i8* nonnull dereferenceable(1) getelementptr inbounds ([6 x i8], [6 x i8]* @float_fmt, i64 0, i64 0), float 0x408F2B3340000000)
+  %0 = call i32 (i8*, ...) @printf(i8* nonnull dereferenceable(1) getelementptr inbounds ([6 x i8], [6 x i8]* @float_fmt, i64 0, i64 0), float 0xC004CCCCC0000000)
   call void @second()
   ret void
 }

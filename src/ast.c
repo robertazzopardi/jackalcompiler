@@ -1,9 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "ast.h"
 
-Node *findLastElement(Node **root)
+Node *findRightmostElement(Node **root)
 {
     if (root == NULL)
         return NULL;

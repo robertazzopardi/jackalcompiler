@@ -205,6 +205,7 @@ void astToLLVMIR(Node *node, const LLVMModuleRef module)
             if (builder)
             {
                 LLVMBuildRetVoid(builder);
+                LLVMDisposeBuilder(builder);
             }
             break;
 
@@ -260,6 +261,7 @@ void astToLLVMIR(Node *node, const LLVMModuleRef module)
     if (builder != NULL)
     {
         LLVMBuildRetVoid(builder);
+        LLVMDisposeBuilder(builder);
     }
 
     free(st);
@@ -281,6 +283,7 @@ void runLLVMPasses(const LLVMModuleRef module)
     {
         printf("output modified by llvm optimiser\n");
     }
+    LLVMDisposePassManager(passManager);
 }
 
 void generateCode(Node *root, ProgramArgs paths)

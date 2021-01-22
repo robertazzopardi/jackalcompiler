@@ -15,9 +15,6 @@
 #include "lexer.h"
 #include "ast.h"
 
-#define EVAL(res, e1, op, e2) \
-    snprintf(res, 10, "%.6g", strtof(e1, NULL) op strtof(e2, NULL))
-
 /**
  * @brief Convert the sequence of tokens to an Abstract Syntax Tree
  *

@@ -12,15 +12,21 @@
 #ifndef _AST_
 #define _AST_
 
-#include "lexer.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#define SPACES 10
+#include "lexer.h"
 
 /**
  * @brief Type declaration of a node
  *
  */
 typedef struct nodes Node;
+
+#include "stack.h"
+
+#define SPACES 10
 
 /**
  * @brief Node Struct declaration
@@ -32,6 +38,7 @@ struct nodes
     Token data;
     Node *leftNode;
     Node *rightNode;
+    Node *parent;
 };
 
 /**
@@ -76,7 +83,7 @@ void print2d(Node *root, int space);
  * @param root
  * @return Node*
  */
-Node *findLastElement(Node **root);
+Node *findRightmostElement(Node **root);
 
 /**
  * @brief Create a new leaf node
