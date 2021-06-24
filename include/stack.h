@@ -11,20 +11,19 @@
 #ifndef _STACK_
 #define _STACK_
 
-#include "ast.h"
-
 /**
  * @brief Stack Node Declaration
  *
  */
 typedef struct stack StackNode;
 
+typedef struct Node Node;
+
 /**
  * @brief stack Node Struct
  *
  */
-typedef struct stack
-{
+typedef struct stack {
     Node *data;
     StackNode *next;
 } StackNode;

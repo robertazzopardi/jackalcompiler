@@ -12,50 +12,28 @@
 #ifndef _FILE_HANDLER_
 #define _FILE_HANDLER_
 
-#include <ctype.h>
+typedef struct ProgramArgs ProgramArgs;
 
-/**
- * @brief determine the path seperators
- *
- */
-#ifdef _WIN32
-#define SEP '\\'
-#else
-#define SEP '/'
-#endif
-
-#define LINE_BUFFER 80
-
-#define ESC '\0'
-
-/**
- * @brief file extensions and file args
- *
- */
-#define EXT_SRC ".jackal"
-#define EXT_BC ".bc"
-#define DOT '.'
+typedef struct FileContents FileContents;
 
 /**
  * @brief Holds the program flags
  *
  */
-typedef struct
-{
+struct ProgramArgs {
     char *filepath;
     char *filename;
     char *folderpath;
-} ProgramArgs;
+};
 
 /**
  * @brief Struct to hold the files lines and the count
  *
  */
-typedef struct
-{
+struct FileContents {
     char **lines;
-    size_t linecount;
-} FileContents;
+    int linecount;
+};
 
 /**
  * @brief Read the files contents

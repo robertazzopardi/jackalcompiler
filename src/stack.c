@@ -3,23 +3,20 @@
 
 #include "stack.h"
 
-StackNode *newNode(Node *data)
-{
+StackNode *newNode(Node *data) {
     StackNode *stackNode = malloc(sizeof(*stackNode));
     stackNode->data = data;
     stackNode->next = NULL;
     return stackNode;
 }
 
-void push(StackNode **root, Node *data)
-{
+void push(StackNode **root, Node *data) {
     StackNode *stackNode = newNode(data);
     stackNode->next = *root;
     *root = stackNode;
 }
 
-Node *pop(StackNode **root)
-{
+Node *pop(StackNode **root) {
     if (!*root)
         return NULL;
 
@@ -32,8 +29,7 @@ Node *pop(StackNode **root)
     return popped;
 }
 
-Node *top(StackNode *root)
-{
+Node *top(StackNode *root) {
     if (!root)
         return NULL;
     return root->data;

@@ -12,8 +12,9 @@
 #ifndef _PARSER_
 #define _PARSER_
 
-#include "lexer.h"
-#include "ast.h"
+typedef struct Node Node;
+
+typedef struct Sequence Sequence;
 
 /**
  * @brief Convert the sequence of tokens to an Abstract Syntax Tree
@@ -21,6 +22,6 @@
  * @param seq
  * @return Node*
  */
-Node *parse(Sequence seq);
+Node *parse(const Sequence *seq);
 
 #endif

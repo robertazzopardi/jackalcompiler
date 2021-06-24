@@ -10,37 +10,47 @@
  */
 
 #include "codegen.h"
+#include "ast.h"
+#include "filehandler.h"
+#include "lexer.h"
+#include "stack.h"
+#include <llvm-c/Analysis.h>
+#include <llvm-c/Core.h>
+#include <llvm-c/Transforms/AggressiveInstCombine.h>
+#include <llvm-c/Transforms/IPO.h>
+#include <llvm-c/Transforms/InstCombine.h>
+#include <llvm-c/Types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-int getStringLength(char *p)
-{
+#define PRINT "print"
+#define EXT_BC ".bc"
+
+int getStringLength(char *p) {
     int count = 0;
-    while (*p != ESC)
-    {
+    while (*p != ESC) {
         count++;
         p++;
     }
     return count;
 }
 
-void writeLLVMIR(const LLVMModuleRef mod, ProgramArgs paths)
-{
-    char destPath[strlen(paths.filename) + strlen(paths.folderpath) + strlen(EXT_BC)];
-    strcpy(destPath, paths.folderpath);
-    strcat(destPath, paths.filename);
+void writeLLVMIR(const LLVMModuleRef mod, ProgramArgs *paths) {
+    char destPath[strlen(paths->filename) + strlen(paths->folderpath) +
+                  strlen(EXT_BC)];
+    strcpy(destPath, paths->folderpath);
+    strcat(destPath, paths->filename);
     strcat(destPath, EXT_BC);
 
-    if (remove(destPath) == 0)
-    {
+    if (remove(destPath) == 0) {
         // printf("File deleted successfully");/
-    }
-    else
-    {
+    } else {
         // printf("Error: unable to delete the file");
     }
 
     char *errors = 0;
-    if (LLVMPrintModuleToFile(mod, destPath, &errors) != 0)
-    {
+    if (LLVMPrintModuleToFile(mod, destPath, &errors) != 0) {
         fprintf(stderr, "error writing to file, skipping\n");
     }
     LLVMDisposeMessage(errors);
@@ -53,13 +63,11 @@ void writeLLVMIR(const LLVMModuleRef mod, ProgramArgs paths)
     //                  config-- cxxflags-- ldflags-- libs` testfile.o
 }
 
-LLVMModuleRef getModule(const char *moduleName)
-{
+LLVMModuleRef getModule(const char *moduleName) {
     return LLVMModuleCreateWithName(moduleName);
 }
 
-char *getBlockName(const char *funcName)
-{
+char *getBlockName(const char *funcName) {
     char *blockName;
     blockName = malloc(strlen(funcName) * sizeof(*blockName));
     strcpy(blockName, funcName);
@@ -67,23 +75,22 @@ char *getBlockName(const char *funcName)
     return blockName;
 }
 
-void verifyModule(const LLVMModuleRef module)
-{
+void verifyModule(const LLVMModuleRef module) {
     char *error = NULL;
     LLVMVerifyModule(module, LLVMAbortProcessAction, &error);
     LLVMDisposeMessage(error);
 }
 
-static inline LLVMValueRef getArgValue(Token token)
-{
+static inline LLVMValueRef getArgValue(Token *token) {
     LLVMValueRef value = NULL;
-    switch (token.attr)
-    {
+    switch (token->attr) {
     case _int:
-        value = LLVMConstInt(LLVMInt32Type(), strtol(token.value, (char **)NULL, 10), LLVMRealPredicateFalse);
+        value = LLVMConstInt(LLVMInt32Type(),
+                             strtol(token->value, (char **)NULL, 10),
+                             LLVMRealPredicateFalse);
         break;
     case _float:
-        value = LLVMConstRealOfString(LLVMFloatType(), token.value);
+        value = LLVMConstRealOfString(LLVMFloatType(), token->value);
         break;
     default:
         break;
@@ -91,11 +98,9 @@ static inline LLVMValueRef getArgValue(Token token)
     return value;
 }
 
-static inline char *getFormatValue(Attribute attr)
-{
+static inline char *getFormatValue(Attribute attr) {
     char *value = NULL;
-    switch (attr)
-    {
+    switch (attr) {
     case _int:
         value = "%d\n";
         break;
@@ -108,11 +113,9 @@ static inline char *getFormatValue(Attribute attr)
     return value;
 }
 
-static inline char *getTypeName(Attribute attr)
-{
+static inline char *getTypeName(Attribute attr) {
     char *value = NULL;
-    switch (attr)
-    {
+    switch (attr) {
     case _int:
         value = "int_fmt";
         break;
@@ -127,20 +130,22 @@ static inline char *getTypeName(Attribute attr)
     return value;
 }
 
-void callPrintf(const LLVMModuleRef module, const LLVMBuilderRef builder, Token token)
-{
-    char *fmtName = getTypeName(token.attr);
+void callPrintf(const LLVMModuleRef module, const LLVMBuilderRef builder,
+                Token *token) {
+    char *fmtName = getTypeName(token->attr);
 
     // Define printf function
     LLVMTypeRef args[] = {LLVMPointerType(LLVMInt8Type(), 0)};
-    LLVMTypeRef printfType = LLVMFunctionType(LLVMInt32Type(), args, 1, LLVMRealPredicateTrue);
+    LLVMTypeRef printfType =
+        LLVMFunctionType(LLVMInt32Type(), args, 1, LLVMRealPredicateTrue);
 
     // Check if declared
     // if (isFunctionDefined(module, "printf") == 0)
     LLVMAddFunction(module, "printf", printfType);
 
     // Set format
-    LLVMValueRef fmtStr = LLVMBuildGlobalStringPtr(builder, getFormatValue(token.attr), fmtName);
+    LLVMValueRef fmtStr =
+        LLVMBuildGlobalStringPtr(builder, getFormatValue(token->attr), fmtName);
 
     // char *fmt = getFormatValue(token.attr);
 
@@ -151,7 +156,8 @@ void callPrintf(const LLVMModuleRef module, const LLVMBuilderRef builder, Token 
     };
 
     // Add the call to the builder
-    LLVMBuildCall2(builder, printfType, LLVMGetNamedFunction(module, "printf"), printArgs, 2, "");
+    LLVMBuildCall2(builder, printfType, LLVMGetNamedFunction(module, "printf"),
+                   printArgs, 2, "");
 }
 
 // typedef enum
@@ -168,8 +174,7 @@ void callPrintf(const LLVMModuleRef module, const LLVMBuilderRef builder, Token 
 //     LLVMIntSLE      /**< signed less or equal */
 // } LLVMIntPredicate;
 
-void astToLLVMIR(Node *node, const LLVMModuleRef module)
-{
+void astToLLVMIR(Node *node, const LLVMModuleRef module) {
     // LLVMTypeRef *parameters = NULL;
     // unsigned parameterLength = 0;
     // LLVMTypeRef returnType;
@@ -183,46 +188,47 @@ void astToLLVMIR(Node *node, const LLVMModuleRef module)
     StackNode *st = NULL;
     push(&st, node);
 
-    while (st)
-    {
+    while (st) {
         Node *curr = top(st);
         pop(&st);
-        //traverse current node first
+        // traverse current node first
 
-        switch (curr->data.attr)
-        {
+        switch (curr->data->attr) {
 
         case _if:
         case _elif:
         case _else:
             // printf("fgd\n");
 
-            // LLVMValueRef ifRef = LLVMBuildICmp(builder, LLVMIntEQ, LLVMConstInt(LLVMInt32Type(), 9, LLVMRealPredicateFalse), LLVMConstInt(LLVMInt32Type(), 5, LLVMRealPredicateFalse), "comparison");
+            // LLVMValueRef ifRef = LLVMBuildICmp(builder, LLVMIntEQ,
+            // LLVMConstInt(LLVMInt32Type(), 9, LLVMRealPredicateFalse),
+            // LLVMConstInt(LLVMInt32Type(), 5, LLVMRealPredicateFalse),
+            // "comparison");
 
             break;
 
         case _funcDef:
-            if (builder)
-            {
+            if (builder) {
                 LLVMBuildRetVoid(builder);
                 LLVMDisposeBuilder(builder);
             }
             break;
 
-        case _funcName:
-        {
-            char *funcName = curr->data.value;
+        case _funcName: {
+            char *funcName = curr->data->value;
 
-            if (curr->type == t_void)
-            {
-                LLVMTypeRef returnType = LLVMFunctionType(LLVMVoidType(), NULL, 0, LLVMRealPredicateFalse);
-                LLVMValueRef valueRef = LLVMAddFunction(module, funcName, returnType);
+            if (*curr->type == t_void) {
+                LLVMTypeRef returnType = LLVMFunctionType(
+                    LLVMVoidType(), NULL, 0, LLVMRealPredicateFalse);
+                LLVMValueRef valueRef =
+                    LLVMAddFunction(module, funcName, returnType);
 
                 blockName = getBlockName(funcName);
 
                 builder = LLVMCreateBuilder();
 
-                LLVMBasicBlockRef blockReference = LLVMAppendBasicBlock(valueRef, blockName);
+                LLVMBasicBlockRef blockReference =
+                    LLVMAppendBasicBlock(valueRef, blockName);
                 free(blockName);
                 LLVMPositionBuilderAtEnd(builder, blockReference);
             }
@@ -231,16 +237,17 @@ void astToLLVMIR(Node *node, const LLVMModuleRef module)
         }
 
         case _funcCall:
-            if (strcmp(curr->data.value, PRINT) == 0)
-            {
+            if (strcmp(curr->data->value, PRINT) == 0) {
                 callPrintf(module, builder, curr->leftNode->data);
-            }
-            else
-            {
+            } else {
                 // printf("%s\n", curr->data.value);
-                LLVMValueRef funcRef = LLVMGetNamedFunction(module, curr->data.value);
+                LLVMValueRef funcRef =
+                    LLVMGetNamedFunction(module, curr->data->value);
 
-                LLVMBuildCall2(builder, LLVMFunctionType(LLVMVoidType(), NULL, 0, LLVMRealPredicateFalse), funcRef, NULL, 0, "");
+                LLVMBuildCall2(builder,
+                               LLVMFunctionType(LLVMVoidType(), NULL, 0,
+                                                LLVMRealPredicateFalse),
+                               funcRef, NULL, 0, "");
             }
 
             break;
@@ -249,17 +256,16 @@ void astToLLVMIR(Node *node, const LLVMModuleRef module)
             break;
         }
 
-        //put right subtree first
+        // put right subtree first
         if (curr->rightNode)
             push(&st, curr->rightNode);
-        //put left subtree then as it will
-        //stay in top for next iteration
+        // put left subtree then as it will
+        // stay in top for next iteration
         if (curr->leftNode)
             push(&st, curr->leftNode);
     }
 
-    if (builder != NULL)
-    {
+    if (builder != NULL) {
         LLVMBuildRetVoid(builder);
         LLVMDisposeBuilder(builder);
     }
@@ -268,35 +274,33 @@ void astToLLVMIR(Node *node, const LLVMModuleRef module)
     // free(blockName);
 }
 
-void runLLVMPasses(const LLVMModuleRef module)
-{
+void runLLVMPasses(const LLVMModuleRef module) {
     LLVMPassManagerRef passManager = LLVMCreatePassManager();
 
     LLVMAddConstantMergePass(passManager);
     LLVMAddGlobalOptimizerPass(passManager);
     LLVMAddInstructionCombiningPass(passManager);
-    LLVMAddIPConstantPropagationPass(passManager);
+    // LLVMAddIPConstantPropagationPass(passManager);
     LLVMAddAggressiveInstCombinerPass(passManager);
     LLVMAddMergeFunctionsPass(passManager);
 
-    if (LLVMRunPassManager(passManager, module) == 1)
-    {
+    if (LLVMRunPassManager(passManager, module) == 1) {
         printf("output modified by llvm optimiser\n");
     }
     LLVMDisposePassManager(passManager);
 }
 
-void generateCode(Node *root, ProgramArgs paths)
-{
+void generateCode(Node *root, ProgramArgs *paths) {
     // Check if there is actually code in the file
-    if (!root->leftNode && !root->rightNode)
-    {
+    if (!root->leftNode && !root->rightNode) {
         printf("No source code found could not compile code\n");
         exit(0);
     }
 
+    printf("Hello I'm here");
+
     // create module
-    LLVMModuleRef module = getModule(paths.filename);
+    LLVMModuleRef module = getModule(paths->filename);
 
     // create llvm ir function
     astToLLVMIR(root, module);

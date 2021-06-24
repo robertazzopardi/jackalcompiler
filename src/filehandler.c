@@ -1,26 +1,37 @@
+#include "filehandler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "filehandler.h"
+/**
+ * @brief determine the path seperators
+ *
+ */
+#ifdef _WIN32
+#define SEP '\\'
+#else
+#define SEP '/'
+#endif
+
+#define LINE_BUFFER 80
+#define ESC '\0'
+#define EXT_SRC ".jackal"
+#define EXT_BC ".bc"
+#define DOT '.'
 
 /* needs rework */
-ProgramArgs parseArgs(int argc, char **argv)
-{
-    ProgramArgs paths;
+ProgramArgs parseArgs(int argc, char **argv) {
+    ProgramArgs paths = {0};
 
-    for (int i = 0; i < argc; i++)
-    {
+    for (int i = 0; i < argc; i++) {
         // Break when .jackal extension is found
-        if (strstr(argv[i], EXT_SRC) != NULL)
-        {
+        if (strstr(argv[i], EXT_SRC) != NULL) {
             paths.filepath = argv[i];
             break;
         }
     }
 
-    if (paths.filepath == NULL)
-    {
+    if (paths.filepath == NULL) {
         printf("file not found\n");
         exit(0);
     }
@@ -44,10 +55,8 @@ ProgramArgs parseArgs(int argc, char **argv)
     return paths;
 }
 
-void parseFileLines(char line[], FileContents *allLines, FILE *inputFile)
-{
-    while (fgets(line, LINE_BUFFER, inputFile) != 0)
-    {
+void parseFileLines(char line[], FileContents *allLines, FILE *inputFile) {
+    while (fgets(line, LINE_BUFFER, inputFile) != 0) {
         line[strcspn(line, "\r\n")] = ESC;
 
         char *result = strstr(line, "//");
@@ -56,24 +65,23 @@ void parseFileLines(char line[], FileContents *allLines, FILE *inputFile)
         if (position < strlen(line))
             line[position] = ESC;
 
-        if (strlen(line) > 0)
-        {
+        if (strlen(line) > 0) {
             printf("%s\n", line);
 
-            allLines->lines = realloc(allLines->lines, (allLines->linecount + 1) * sizeof(*allLines->lines));
+            allLines->lines =
+                realloc(allLines->lines,
+                        (allLines->linecount + 1) * sizeof(*allLines->lines));
             allLines->lines[allLines->linecount++] = strdup(line);
         }
     }
 }
 
-FileContents readFile(const char *filepath)
-{
+FileContents readFile(const char *filepath) {
     printf("\n");
 
     // open the file
     FILE *inputFile = fopen(filepath, "r");
-    if (!inputFile)
-    {
+    if (!inputFile) {
         printf("Can't open file: %s\n", filepath);
         exit(EXIT_FAILURE);
     }
@@ -89,15 +97,13 @@ FileContents readFile(const char *filepath)
     return allLines;
 }
 
-void freePathVars(ProgramArgs paths)
-{
+void freePathVars(ProgramArgs paths) {
     free(paths.filename);
     free(paths.folderpath);
     // free(paths.filepath);
 }
 
-void cleanUpFileContents(FileContents lines)
-{
+void cleanUpFileContents(FileContents lines) {
     while (lines.linecount--)
         free(lines.lines[lines.linecount]);
     free(lines.lines);

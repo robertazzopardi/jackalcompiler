@@ -16,7 +16,7 @@ SCAN =		scan-build
 SCANFLAGS =	-analyze-headers -no-failure-reports -enable-checker deadcode.DeadStores
 
 # define any compile-time flags
-CFLAGS		:= -Wall -Wextra -g -fsanitize=leak
+CFLAGS		:= -Wall -Wextra -Werror -std=c17 -flto -Oz -fsanitize=leak
 
 LLVMCFLAGS 	:= `llvm-config --cflags`
 

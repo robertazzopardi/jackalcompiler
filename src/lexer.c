@@ -1,33 +1,29 @@
-#include <string.h>
+#include "lexer.h"
+#include "filehandler.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
+#include <string.h>
 
-#include "lexer.h"
-
-inline void printSequence(const Sequence seq)
-{
+inline void printSequence(const Sequence *seq) {
     printf("\n");
-    for (size_t i = 0; i < seq.count; i++)
-        printf("%s ", seq.tokens[i].value);
+    for (int i = 0; i < seq->count; i++)
+        printf("%s ", seq->tokens[i].value);
     printf("\n");
 }
 
-static inline void allocate(Sequence *seq)
-{
+static inline void allocate(Sequence *seq) {
     seq->count++;
     seq->tokens = realloc(seq->tokens, seq->count * sizeof(*seq->tokens));
 }
 
-inline void cleanUpSeq(Sequence seq)
-{
+inline void cleanUpSeq(Sequence seq) {
     // while (seq.count--)
     //     free(seq.tokens[seq.count].value);
     free(seq.tokens);
 }
 
-char *trimwhitespace(char *str)
-{
+char *trimwhitespace(char *str) {
     char *end;
 
     // Trim leading space
@@ -48,8 +44,7 @@ char *trimwhitespace(char *str)
     return str;
 }
 
-int isNumeric(const char *s)
-{
+int isNumeric(const char *s) {
     if (s == NULL || *s == ESC || isspace(*s))
         return 0;
     char *p;
@@ -57,19 +52,16 @@ int isNumeric(const char *s)
     return *p == ESC;
 }
 
-void setTokenValueAttr(const Sequence *seq, char *value, const Attribute attr)
-{
+void setTokenValueAttr(const Sequence *seq, char *value, const Attribute attr) {
     seq->tokens[seq->count - 1].value = value;
     seq->tokens[seq->count - 1].attr = attr;
 }
 
-Sequence lex(FileContents fileContents)
-{
+Sequence lex(FileContents *fileContents) {
     Sequence seq = {.count = 0, .tokens = malloc(sizeof(*seq.tokens))};
 
-    for (size_t i = 0; i < fileContents.linecount; i++)
-    {
-        char *line = fileContents.lines[i];
+    for (int i = 0; i < fileContents->linecount; i++) {
+        char *line = fileContents->lines[i];
 
         char firstnum = 0;
 
@@ -79,37 +71,32 @@ Sequence lex(FileContents fileContents)
         rawToken = strtok(line, " ");
 
         // Loop other tokens
-        while (rawToken != NULL)
-        {
+        while (rawToken != NULL) {
             // trim whitespace
             rawToken = trimwhitespace(rawToken);
 
             allocate(&seq);
 
-            if (strcmp(rawToken, FUNC) == 0)
-            {
+            if (strcmp(rawToken, FUNC) == 0) {
                 setTokenValueAttr(&seq, rawToken, _funcDef);
-            }
-            else if (seq.tokens[seq.count - 2].attr == _funcDef)
-            {
+            } else if (seq.tokens[seq.count - 2].attr == _funcDef) {
                 setTokenValueAttr(&seq, rawToken, _funcName);
-            }
-            else if (isNumeric(rawToken))
-            {
+            } else if (isNumeric(rawToken)) {
 
-                if (firstnum == 0 && (seq.tokens[seq.count - 2].attr != _int || seq.tokens[seq.count - 2].attr != _float))
-                {
+                if (firstnum == 0 &&
+                    (seq.tokens[seq.count - 2].attr != _int ||
+                     seq.tokens[seq.count - 2].attr != _float)) {
                     setTokenValueAttr(&seq, "(", _leftBracket);
                     allocate(&seq);
                     firstnum = 1;
                 }
 
-                setTokenValueAttr(&seq, rawToken, strchr(rawToken, DOT) ? _float : _int);
+                setTokenValueAttr(&seq, rawToken,
+                                  strchr(rawToken, DOT) ? _float : _int);
 
                 char *tmp = strtok(NULL, " ");
 
-                if (tmp == NULL)
-                {
+                if (tmp == NULL) {
                     allocate(&seq);
                     setTokenValueAttr(&seq, ")", _rightBracket);
                     firstnum = 0;
@@ -117,23 +104,16 @@ Sequence lex(FileContents fileContents)
 
                 rawToken = tmp;
                 continue;
-            }
-            else if (strcmp(rawToken, RET_TYPE) == 0)
-            {
+            } else if (strcmp(rawToken, RET_TYPE) == 0) {
                 setTokenValueAttr(&seq, rawToken, _funcReturnType);
-            }
-            else if (seq.tokens[seq.count - 2].attr == _funcReturnType)
-            {
+            } else if (seq.tokens[seq.count - 2].attr == _funcReturnType) {
                 setTokenValueAttr(&seq, rawToken, _type);
-            }
-            else if (isOperator(rawToken[strlen(rawToken) - 1]))
-            {
+            } else if (isOperator(rawToken[strlen(rawToken) - 1])) {
                 setTokenValueAttr(&seq, rawToken, _operator);
 
                 char c = rawToken[0];
 
-                switch (c)
-                {
+                switch (c) {
                 case SUB:
                 case ADD:
                     seq.tokens[seq.count - 1].precedence = 2;
@@ -155,24 +135,20 @@ Sequence lex(FileContents fileContents)
                 }
             }
 
-            else if (strcmp(rawToken, IF) == 0)
-            {
+            else if (strcmp(rawToken, IF) == 0) {
                 setTokenValueAttr(&seq, rawToken, _if);
             }
 
-            else if (strcmp(rawToken, ELIF) == 0)
-            {
+            else if (strcmp(rawToken, ELIF) == 0) {
                 setTokenValueAttr(&seq, rawToken, _elif);
             }
 
-            else if (strcmp(rawToken, ELSE) == 0)
-            {
+            else if (strcmp(rawToken, ELSE) == 0) {
                 setTokenValueAttr(&seq, rawToken, _else);
             }
 
             // used for function calls for now
-            else
-            {
+            else {
                 setTokenValueAttr(&seq, rawToken, _funcCall);
             }
 
@@ -181,7 +157,7 @@ Sequence lex(FileContents fileContents)
         }
     }
 
-    printSequence(seq);
+    printSequence(&seq);
 
     // cleanUpSeq(seq);
     return seq;

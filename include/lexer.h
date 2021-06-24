@@ -12,8 +12,6 @@
 #ifndef _LEXER_
 #define _LEXER_
 
-#include "filehandler.h"
-
 #define ADD '+'
 #define SUB '-'
 #define MUL '*'
@@ -43,30 +41,28 @@
 
 #define GET_FORMAT(o) ((o == MOD || o == LARR || o == RARR) ? "%d" : "%.6g")
 
+typedef struct Token Token;
+
+typedef struct FileContents FileContents;
+
+typedef struct Sequence Sequence;
+
 /**
  * @brief Built In types
  *
  */
-typedef enum
-{
-    t_int,
-    t_float,
-    t_void
-} Type;
+enum Type { t_int, t_float, t_void };
 
 /**
  * @brief Token Attributes
  *
  */
-typedef enum
-{
+typedef enum {
     _none,
     _leftBracket,
     _rightBracket,
-
     _int,
     _float,
-
     _var,
     _type,
     _funcCall,
@@ -85,41 +81,34 @@ typedef enum
  * @brief Operator Associate
  *
  */
-typedef enum
-{
-    none,
-    left_to_right,
-    right_to_left
-} Associates;
+typedef enum { none, left_to_right, right_to_left } Associates;
 
 /**
  * @brief Token
  *
  */
-typedef struct
-{
+struct Token {
     char *value;
     Attribute attr;
     int precedence;
     Associates associate;
-} Token;
+};
 
 /**
  * @brief Array of tokens and array length
  *
  */
-typedef struct
-{
+struct Sequence {
     Token *tokens;
-    size_t count;
-} Sequence;
+    int count;
+};
 
 /**
  * @brief Print the sequence in a line
  *
  * @param seq
  */
-void printSequence(const Sequence seq);
+void printSequence(const Sequence *seq);
 
 /**
  * @brief Free the allocated sequence memory
@@ -134,7 +123,7 @@ void cleanUpSeq(Sequence seq);
  * @param fileContents
  * @return Sequence
  */
-Sequence lex(FileContents fileContents);
+Sequence lex(FileContents *fileContents);
 
 /**
  * @brief Check if a character is an operator
@@ -142,9 +131,9 @@ Sequence lex(FileContents fileContents);
  * @param o
  * @return int
  */
-static inline int isOperator(const char o)
-{
-    return (o == MOD || o == DIV || o == MUL || o == ADD || o == SUB || o == EXP || o == LARR || o == RARR);
+static inline int isOperator(const char o) {
+    return (o == MOD || o == DIV || o == MUL || o == ADD || o == SUB ||
+            o == EXP || o == LARR || o == RARR);
 }
 
 #endif

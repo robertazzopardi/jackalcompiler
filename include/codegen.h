@@ -9,32 +9,19 @@
  *
  */
 
-#ifndef _CODEGEN_
-#define _CODEGEN_
+#ifndef __CODEGEN__
+#define __CODEGEN__
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+typedef struct Node Node;
 
-#include <llvm-c/Core.h>
-#include <llvm-c/Types.h>
-#include <llvm-c/Analysis.h>
-#include <llvm-c/Transforms/IPO.h>
-#include <llvm-c/Transforms/InstCombine.h>
-#include <llvm-c/Transforms/AggressiveInstCombine.h>
-
-#include "ast.h"
-#include "filehandler.h"
-#include "stack.h"
-
-#define PRINT "print"
+typedef struct ProgramArgs ProgramArgs;
 
 /**
  * @brief Entry of the code generation
  *
  * @param root
  */
-void generateCode(Node *root, ProgramArgs paths);
+void generateCode(Node *root, ProgramArgs *paths);
 
 /**
  * @brief parse the ast created from the parser

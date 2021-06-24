@@ -9,33 +9,26 @@
  *
  */
 
-#ifndef _AST_
-#define _AST_
-
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "lexer.h"
+#ifndef __AST__
+#define __AST__
 
 /**
  * @brief Type declaration of a node
  *
  */
-typedef struct nodes Node;
+typedef struct Node Node;
 
-#include "stack.h"
+typedef enum Type Type;
 
-#define SPACES 10
+typedef struct Token Token;
 
 /**
  * @brief Node Struct declaration
  *
  */
-struct nodes
-{
-    Type type;
-    Token data;
+struct Node {
+    Type *type;
+    Token *data;
     Node *leftNode;
     Node *rightNode;
     Node *parent;
@@ -91,7 +84,7 @@ Node *findRightmostElement(Node **root);
  * @param data
  * @return Node*
  */
-Node *newNodeLeaf(Token data);
+Node *newNodeLeaf(Token *data);
 
 /**
  * @brief Create new node with a node to the left
@@ -100,7 +93,7 @@ Node *newNodeLeaf(Token data);
  * @param node
  * @return Node*
  */
-Node *newNodeLeft(Token data, Node *node);
+Node *newNodeLeft(Token *data, Node *node);
 
 /**
  * @brief Create new node with a left and right node
@@ -110,6 +103,6 @@ Node *newNodeLeft(Token data, Node *node);
  * @param rightNode
  * @return Node*
  */
-Node *newNodeBoth(Token data, Node *leftNode, Node *rightNode);
+Node *newNodeBoth(Token *data, Node *leftNode, Node *rightNode);
 
 #endif

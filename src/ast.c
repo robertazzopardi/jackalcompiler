@@ -1,7 +1,13 @@
 #include "ast.h"
+#include "lexer.h"
+#include "stack.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-Node *findRightmostElement(Node **root)
-{
+#define SPACES 10
+
+Node *findRightmostElement(Node **root) {
     if (root == NULL)
         return NULL;
 
@@ -11,42 +17,38 @@ Node *findRightmostElement(Node **root)
     return *root;
 }
 
-void printInOrder(Node *node)
-{
+void printInOrder(Node *node) {
     if (!node)
         return;
 
     printPreOrder(node->leftNode);
 
-    printf("%s ", node->data.value);
+    printf("%s ", node->data->value);
 
     printPreOrder(node->rightNode);
 }
 
-void printPreOrder(Node *node)
-{
+void printPreOrder(Node *node) {
     if (!node)
         return;
 
-    printf("%s ", node->data.value);
+    printf("%s ", node->data->value);
 
     printPreOrder(node->leftNode);
     printPreOrder(node->rightNode);
 }
 
-void printPostOrder(Node *node)
-{
+void printPostOrder(Node *node) {
     if (!node)
         return;
 
     printPostOrder(node->leftNode);
     printPostOrder(node->rightNode);
 
-    printf("%s ", node->data.value);
+    printf("%s ", node->data->value);
 }
 
-void freeTree(Node *node)
-{
+void freeTree(Node *node) {
     if (!node)
         return;
 
@@ -56,8 +58,7 @@ void freeTree(Node *node)
     free(node);
 }
 
-Node *newNodeLeaf(Token data)
-{
+Node *newNodeLeaf(Token *data) {
     // Allocate memory for new node
     Node *node = calloc(1, sizeof(*node));
     // Node *node = malloc(sizeof(*node));
@@ -71,8 +72,7 @@ Node *newNodeLeaf(Token data)
     return node;
 }
 
-Node *newNodeLeft(Token data, Node *node)
-{
+Node *newNodeLeft(Token *data, Node *node) {
     // Allocate memory for new node
     Node *root = calloc(1, sizeof(*root));
 
@@ -85,8 +85,7 @@ Node *newNodeLeft(Token data, Node *node)
     return root;
 }
 
-Node *newNodeBoth(Token data, Node *leftNode, Node *rightNode)
-{
+Node *newNodeBoth(Token *data, Node *leftNode, Node *rightNode) {
     // Allocate memory for new node
     Node *node = calloc(1, sizeof(*node));
     // Node *node = malloc(sizeof(*node));
@@ -101,8 +100,7 @@ Node *newNodeBoth(Token data, Node *leftNode, Node *rightNode)
     return node;
 }
 
-void print2d(Node *root, int space)
-{
+void print2d(Node *root, int space) {
     // Base case
     if (root == NULL)
         return;
@@ -117,7 +115,7 @@ void print2d(Node *root, int space)
     printf("\n");
     for (int i = SPACES; i < space; i++)
         printf(" ");
-    printf("%s\n", root->data.value);
+    printf("%s\n", root->data->value);
 
     // Process left child
     print2d(root->leftNode, space);
